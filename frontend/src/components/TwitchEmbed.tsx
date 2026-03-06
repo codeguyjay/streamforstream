@@ -9,6 +9,9 @@ export interface TwitchEmbedHandle {
 
 interface TwitchEmbedProps {
   channelLogin: string;
+  autoplay?: boolean;
+  muted?: boolean;
+  showChat?: boolean;
   ref?: React.Ref<TwitchEmbedHandle>;
 }
 
@@ -74,7 +77,13 @@ function loadTwitchScript(): Promise<void> {
   });
 }
 
-export function TwitchEmbed({ channelLogin, ref }: TwitchEmbedProps) {
+export function TwitchEmbed({
+  channelLogin,
+  autoplay = true,
+  muted = true,
+  showChat = true,
+  ref,
+}: TwitchEmbedProps) {
   const parent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<TwitchPlayer | null>(null);
@@ -100,16 +109,18 @@ export function TwitchEmbed({ channelLogin, ref }: TwitchEmbedProps) {
         height: "100%",
         channel: channelLogin,
         parent: [parent],
-        layout: "video-with-chat",
-        autoplay: true,
-        muted: true,
+        layout: showChat ? "video-with-chat" : "video",
+        autoplay,
+        muted,
       });
 
       embed.addEventListener(window.Twitch.Embed.VIDEO_READY, () => {
         const player = embed.getPlayer();
         playerRef.current = player;
-        player.setMuted(true);
-        player.play();
+        player.setMuted(muted);
+        if (autoplay) {
+          player.play();
+        }
       });
     });
 
@@ -118,7 +129,7 @@ export function TwitchEmbed({ channelLogin, ref }: TwitchEmbedProps) {
       playerRef.current = null;
       container.innerHTML = "";
     };
-  }, [channelLogin, parent]);
+  }, [autoplay, channelLogin, muted, parent, showChat]);
 
   return <div className="twitch-frame" ref={containerRef} />;
 }

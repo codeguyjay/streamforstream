@@ -2,17 +2,27 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
 
 import { StreamsService } from "@/api";
 import { LiveStreamCard } from "@/components/LiveStreamCard";
+import { TwitchEmbed } from "@/components/TwitchEmbed";
 import { getErrorMessage } from "@/lib/errors";
 
 export function LandingPage() {
+  const [selectedChannelLogin, setSelectedChannelLogin] = useState<string | null>(null);
   const liveStreamsQuery = useQuery({
     queryKey: ["landing-live-streams"],
     queryFn: () => StreamsService.getLive({ limit: 6 }),
     refetchInterval: 30_000,
   });
+  const streams = liveStreamsQuery.data?.items ?? [];
+  const effectiveSelectedChannelLogin =
+    streams.some((item) => item.channel_login === selectedChannelLogin)
+      ? selectedChannelLogin
+      : streams[0]?.channel_login ?? null;
+  const selectedStream =
+    streams.find((item) => item.channel_login === effectiveSelectedChannelLogin) ?? null;
 
   return (
     <div className="stack">
@@ -34,13 +44,46 @@ export function LandingPage() {
               </Link>
             </div>
           </div>
-          <div className="panel">
-            <p className="eyebrow">How It Works</p>
-            <ol className="list">
-              <li>Add your Twitch stream.</li>
-              <li>Watch other creators and engage in their chat to earn points.</li>
-              <li>When you are ready, go live and get promoted until you finish streaming.</li>
-            </ol>
+          <div className="panel stack hero-media-panel">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Live Preview</p>
+                <h2>{selectedStream ? selectedStream.channel_display_name : "Select a live streamer"}</h2>
+                <p className="panel-subtitle">
+                  {selectedStream
+                    ? "The player autoplays muted when Twitch allows it."
+                    : "Pick a live card below and the player will switch instantly."}
+                </p>
+              </div>
+              {selectedStream ? (
+                <Link className="button-ghost" href={selectedStream.channel_url} rel="noreferrer" target="_blank">
+                  Open on Twitch
+                </Link>
+              ) : null}
+            </div>
+
+            {liveStreamsQuery.isLoading && !selectedStream ? (
+              <p className="helper">Loading a live stream preview...</p>
+            ) : null}
+            {liveStreamsQuery.isError && !selectedStream ? (
+              <p className="error-text">{getErrorMessage(liveStreamsQuery.error, "Unable to load live streams.")}</p>
+            ) : null}
+            {selectedStream ? (
+              <>
+                <TwitchEmbed autoplay channelLogin={selectedStream.channel_login} muted showChat={false} />
+                <div className="pill-row">
+                  <span className="pill live">{selectedStream.viewer_count} viewers</span>
+                  <span className="pill">{selectedStream.game_name || "Just Chatting"}</span>
+                  <span className="pill">{selectedStream.stream_title || "Live now"}</span>
+                </div>
+              </>
+            ) : null}
+            {!liveStreamsQuery.isLoading && !liveStreamsQuery.isError && !selectedStream ? (
+              <div className="empty-card">
+                <h3>No one is live yet.</h3>
+                <p className="helper">Be the first streamer on the board today.</p>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
@@ -49,7 +92,7 @@ export function LandingPage() {
         <div className="panel-header">
           <div>
             <h2>Streaming Right Now</h2>
-            <p className="panel-subtitle">Live channels are ranked by current Twitch viewer count.</p>
+            <p className="panel-subtitle">Live channels are ranked by viewer count. Click any card to switch the player above.</p>
           </div>
         </div>
 
@@ -57,14 +100,19 @@ export function LandingPage() {
         {liveStreamsQuery.isError ? (
           <p className="error-text">{getErrorMessage(liveStreamsQuery.error, "Unable to load live streams.")}</p>
         ) : null}
-        {liveStreamsQuery.data && liveStreamsQuery.data.items.length > 0 ? (
+        {streams.length > 0 ? (
           <div className="live-grid">
-            {liveStreamsQuery.data.items.map((stream) => (
-              <LiveStreamCard key={stream.channel_login} stream={stream} />
+            {streams.map((stream) => (
+              <LiveStreamCard
+                key={stream.channel_login}
+                onSelect={() => setSelectedChannelLogin(stream.channel_login)}
+                selected={effectiveSelectedChannelLogin === stream.channel_login}
+                stream={stream}
+              />
             ))}
           </div>
         ) : null}
-        {liveStreamsQuery.data && liveStreamsQuery.data.items.length === 0 ? (
+        {liveStreamsQuery.data && streams.length === 0 ? (
           <div className="empty-card">
             <h3>No one is live yet.</h3>
             <p className="helper">Be the first streamer on the board today.</p>
