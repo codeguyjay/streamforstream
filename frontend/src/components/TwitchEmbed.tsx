@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 interface TwitchEmbedProps {
   channelLogin: string;
 }
 
-export function TwitchEmbed({ channelLogin }: TwitchEmbedProps) {
-  const [parent, setParent] = useState("localhost");
+function subscribe(): () => void {
+  return () => {};
+}
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.location.hostname) {
-      setParent(window.location.hostname);
-    }
-  }, []);
+function getSnapshot(): string {
+  return window.location.hostname || "localhost";
+}
+
+function getServerSnapshot(): string {
+  return "localhost";
+}
+
+export function TwitchEmbed({ channelLogin }: TwitchEmbedProps) {
+  const parent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
     <iframe

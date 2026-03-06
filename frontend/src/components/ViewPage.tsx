@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { StreamsService, ViewsService } from "@/api";
-import type { LiveStreamerResponse } from "@/api/models/LiveStreamerResponse";
 import { LiveStreamCard } from "@/components/LiveStreamCard";
 import { TwitchEmbed } from "@/components/TwitchEmbed";
 import { getErrorMessage } from "@/lib/errors";
@@ -20,7 +19,6 @@ export function ViewPage() {
   const [selectedChannelLogin, setSelectedChannelLogin] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [localPointsBalance, setLocalPointsBalance] = useState<number | null>(null);
-  const [selectedStream, setSelectedStream] = useState<LiveStreamerResponse | null>(null);
   const lastReportKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -40,16 +38,13 @@ export function ViewPage() {
     refetchInterval: 30_000,
   });
   const { data, error, isError, isLoading, refetch } = liveStreamsQuery;
-
-  useEffect(() => {
-    if (data) {
-      setLocalPointsBalance(data.viewer_points_balance);
-      const nextSelected =
-        data.items.find((item) => item.channel_login === selectedChannelLogin) ?? data.items[0] ?? null;
-      setSelectedStream(nextSelected);
-      setSelectedChannelLogin(nextSelected?.channel_login ?? null);
-    }
-  }, [data, selectedChannelLogin]);
+  const streams = data?.items ?? [];
+  const effectiveSelectedChannelLogin =
+    streams.some((item) => item.channel_login === selectedChannelLogin)
+      ? selectedChannelLogin
+      : streams[0]?.channel_login ?? null;
+  const selectedStream =
+    streams.find((item) => item.channel_login === effectiveSelectedChannelLogin) ?? null;
 
   const goLiveMutation = useMutation({
     mutationFn: () => {
@@ -88,6 +83,8 @@ export function ViewPage() {
       return;
     }
 
+    const viewerChannelLogin = session.channel_login;
+    const targetChannelLogin = selectedStream.channel_login;
     let cancelled = false;
 
     async function maybeReportView() {
@@ -96,15 +93,15 @@ export function ViewPage() {
       }
 
       const viewedMinute = currentMinuteIso();
-      const reportKey = `${selectedStream.channel_login}:${viewedMinute}`;
+      const reportKey = `${targetChannelLogin}:${viewedMinute}`;
       if (lastReportKeyRef.current === reportKey) {
         return;
       }
 
       try {
         const result = await ViewsService.reportView({
-          viewer_channel_login: session.channel_login,
-          target_channel_login: selectedStream.channel_login,
+          viewer_channel_login: viewerChannelLogin,
+          target_channel_login: targetChannelLogin,
           viewed_minute: viewedMinute,
         });
         if (cancelled) {
@@ -225,13 +222,13 @@ export function ViewPage() {
           </div>
 
           {isLoading ? <p className="helper">Loading live streamers...</p> : null}
-          {data && data.items.length > 0 ? (
+          {streams.length > 0 ? (
             <div className="stack">
-              {data.items.map((stream) => (
+              {streams.map((stream) => (
                 <LiveStreamCard
                   key={stream.channel_login}
                   onSelect={() => setSelectedChannelLogin(stream.channel_login)}
-                  selected={selectedChannelLogin === stream.channel_login}
+                  selected={effectiveSelectedChannelLogin === stream.channel_login}
                   stream={stream}
                 />
               ))}
