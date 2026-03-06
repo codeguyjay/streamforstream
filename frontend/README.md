@@ -13,7 +13,7 @@ Next.js application for the StreamForStream landing page and anonymous streamer 
 
 Copy `.env.example` to `.env.local` and set:
 
-- `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`
+- `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`
 
 ## Install
 
@@ -25,6 +25,14 @@ npm.cmd install
 
 ```powershell
 npm.cmd run dev
+```
+
+Before starting the frontend, make sure the backend is running from the repo root with:
+
+```powershell
+cd ..\backend
+docker build -t streamforstream-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
 ```
 
 ## Build / Lint
@@ -40,5 +48,5 @@ The checked-in client lives under `src/api`.
 
 To regenerate it after backend API changes:
 
-1. Save `http://localhost:8000/openapi.json` to `frontend/openapi.json`.
+1. Save `http://localhost:8080/openapi.json` to `frontend/openapi.json`.
 2. Run `npx openapi-typescript-codegen --input ./openapi.json --output ./src/api`.

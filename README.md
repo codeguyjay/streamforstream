@@ -11,7 +11,7 @@ Anonymous Twitch streamer discovery for creators who want to trade real viewing 
 
 ## Prerequisites
 
-- Python 3.11+ with `pip`
+- Docker Desktop
 - Node.js 20+ with `npm`
 - A Twitch developer application with a `Client ID` and `Client Secret`
 
@@ -22,7 +22,7 @@ Anonymous Twitch streamer discovery for creators who want to trade real viewing 
 - Create or use an existing Twitch developer application.
 - Copy the Twitch `Client ID`.
 - Copy the Twitch `Client Secret`.
-- Keep both values ready for the backend `.env` file.
+- Keep both values ready for the backend `.env.local` file.
 
 ### 2. Set up the backend
 
@@ -30,14 +30,10 @@ From the repo root:
 
 ```powershell
 cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
+Copy-Item .env.example .env.local
 ```
 
-Then edit `backend/.env` and set:
+Then edit `backend/.env.local` and set:
 
 ```env
 TWITCH_CLIENT_ID=your-twitch-client-id
@@ -59,7 +55,7 @@ npm.cmd install
 Then confirm `frontend/.env.local` contains:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ```
 
 Note for PowerShell: use `npm.cmd` instead of `npm` if your machine blocks `npm.ps1` scripts.
@@ -69,16 +65,16 @@ Note for PowerShell: use `npm.cmd` instead of `npm` if your machine blocks `npm.
 ### Terminal 1: backend
 
 ```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload --port 8000
+cd c:\Users\toonm\workspace\streamforstream\backend
+docker build -t streamforstream-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
 ```
 
 Expected URLs:
 
-- API root: `http://localhost:8000/`
-- API docs: `http://localhost:8000/docs`
-- OpenAPI schema: `http://localhost:8000/openapi.json`
+- API root: `http://localhost:8080/`
+- API docs: `http://localhost:8080/docs`
+- OpenAPI schema: `http://localhost:8080/openapi.json`
 
 ### Terminal 2: frontend
 
@@ -115,9 +111,9 @@ Expected URL:
 ### Backend
 
 ```powershell
-cd backend
-.\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload --port 8000
+cd c:\Users\toonm\workspace\streamforstream\backend
+docker build -t streamforstream-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
 ```
 
 ### Frontend
@@ -134,7 +130,7 @@ npm.cmd run build
 From the repo root after the backend is running:
 
 ```powershell
-Invoke-WebRequest -Uri "http://localhost:8000/openapi.json" -OutFile "./frontend/openapi.json" -UseBasicParsing
+Invoke-WebRequest -Uri "http://localhost:8080/openapi.json" -OutFile "./frontend/openapi.json" -UseBasicParsing
 cd frontend
 npx openapi-typescript-codegen --input ./openapi.json --output ./src/api
 ```
@@ -142,7 +138,8 @@ npx openapi-typescript-codegen --input ./openapi.json --output ./src/api
 ## Troubleshooting
 
 - `This Twitch channel is not currently live.`: the backend successfully resolved the channel, but Twitch says it is offline.
-- `TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be configured.`: your backend `.env` file is missing required values.
+- `TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be configured.`: your backend `.env.local` file is missing required values.
+- Docker cannot start the backend: make sure Docker Desktop is running and `backend/.env.local` exists.
 - Landing page loads but no streams appear: that is expected until at least one streamer goes live through the app.
 - Points or live status disappear after restarting the backend: all storage is in memory for this phase.
 
