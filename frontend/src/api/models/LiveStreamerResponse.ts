@@ -8,5 +8,5 @@ export interface LiveStreamerResponse {
   game_name: string;
   viewer_count: number;
   went_live_at: string;
-  points_balance: number;
+  total_points: number;
 }

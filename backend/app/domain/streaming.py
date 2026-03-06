@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Literal
+
+
+SortMode = Literal["viewer_count_desc", "engagement_priority"]
+
+VIEWER_COUNT_DESC: SortMode = "viewer_count_desc"
+ENGAGEMENT_PRIORITY: SortMode = "engagement_priority"
 
 
 def utc_now() -> datetime:
@@ -40,9 +47,24 @@ class LiveStreamRecord:
     is_live: bool
     went_live_at: datetime
     updated_at: datetime
+    point_balance: int
+    total_points: int
+
+
+@dataclass(slots=True)
+class PointState:
+    point_balance: int
+    total_points: int
+
+
+@dataclass(slots=True)
+class PaginatedLiveStreamResult:
+    items: list[LiveStreamRecord]
+    next_cursor: dict[str, str] | None = None
 
 
 @dataclass(slots=True)
 class ViewCreditResult:
     credited: bool
     viewer_points_balance: int
+    viewer_total_points: int

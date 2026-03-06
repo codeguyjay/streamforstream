@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import routes_streams, routes_twitch, routes_views
-from app.storage import create_in_memory_storage
+from app.storage import create_storage_from_env
 from app.twitch.client import TwitchClient
 
 load_dotenv()
@@ -33,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.state.streaming_store = create_in_memory_storage()
+app.state.streaming_store = create_storage_from_env()
 app.state.twitch_client = TwitchClient(
     client_id=os.environ.get("TWITCH_CLIENT_ID", ""),
     client_secret=os.environ.get("TWITCH_CLIENT_SECRET", ""),

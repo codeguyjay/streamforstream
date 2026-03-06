@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import get_streaming_store
 from app.api.models.views import ReportViewRequest, ReportViewResponse
-from app.storage import InMemoryStreamingStore
+from app.storage import StreamingStore
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/views", tags=["views"])
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/views", tags=["views"])
 @router.post("/report", response_model=ReportViewResponse)
 async def report_view(
     request: ReportViewRequest,
-    store: InMemoryStreamingStore = Depends(get_streaming_store),
+    store: StreamingStore = Depends(get_streaming_store),
 ) -> ReportViewResponse:
     logger.info(
         "POST /views/report viewer=%s target=%s minute=%s",
@@ -24,7 +24,7 @@ async def report_view(
         request.viewed_minute,
     )
     try:
-        result = store.credit_view_minute(
+        result = store.apply_view_report(
             viewer_channel_login=request.viewer_channel_login,
             target_channel_login=request.target_channel_login,
             viewed_minute=request.viewed_minute,
@@ -34,5 +34,5 @@ async def report_view(
 
     return ReportViewResponse(
         credited=result.credited,
-        viewer_points_balance=result.viewer_points_balance,
+        viewer_total_points=result.viewer_total_points,
     )

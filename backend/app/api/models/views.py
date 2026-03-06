@@ -9,4 +9,4 @@ class ReportViewRequest(BaseModel):
 
 class ReportViewResponse(BaseModel):
     credited: bool
-    viewer_points_balance: int
+    viewer_total_points: int

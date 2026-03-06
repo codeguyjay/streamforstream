@@ -82,6 +82,36 @@
               "default": 20,
               "title": "Limit"
             }
+          },
+          {
+            "name": "sort_mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "viewer_count_desc",
+                "engagement_priority"
+              ],
+              "type": "string",
+              "default": "viewer_count_desc",
+              "title": "Sort Mode"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
           }
         ],
         "responses": {
@@ -360,9 +390,9 @@
             "format": "date-time",
             "title": "Went Live At"
           },
-          "points_balance": {
+          "total_points": {
             "type": "integer",
-            "title": "Points Balance"
+            "title": "Total Points"
           }
         },
         "type": "object",
@@ -376,7 +406,7 @@
           "game_name",
           "viewer_count",
           "went_live_at",
-          "points_balance"
+          "total_points"
         ],
         "title": "LiveStreamerResponse"
       },
@@ -394,21 +424,37 @@
             "format": "date-time",
             "title": "Checked At"
           },
-          "viewer_points_balance": {
+          "viewer_total_points": {
             "type": "integer",
-            "title": "Viewer Points Balance"
+            "title": "Viewer Total Points"
           },
           "viewer_is_live": {
             "type": "boolean",
             "title": "Viewer Is Live"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More"
           }
         },
         "type": "object",
         "required": [
           "items",
           "checked_at",
-          "viewer_points_balance",
-          "viewer_is_live"
+          "viewer_total_points",
+          "viewer_is_live",
+          "has_more"
         ],
         "title": "LiveStreamersResponse"
       },
@@ -447,15 +493,15 @@
             "type": "boolean",
             "title": "Credited"
           },
-          "viewer_points_balance": {
+          "viewer_total_points": {
             "type": "integer",
-            "title": "Viewer Points Balance"
+            "title": "Viewer Total Points"
           }
         },
         "type": "object",
         "required": [
           "credited",
-          "viewer_points_balance"
+          "viewer_total_points"
         ],
         "title": "ReportViewResponse"
       },

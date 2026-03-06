@@ -6,7 +6,12 @@ import type { LiveStreamersResponse } from "@/api/models/LiveStreamersResponse";
 import type { SuccessResponse } from "@/api/models/SuccessResponse";
 
 export class StreamsService {
-  static getLive(params?: { exclude_channel_login?: string; limit?: number }) {
+  static getLive(params?: {
+    exclude_channel_login?: string;
+    limit?: number;
+    cursor?: string | null;
+    sort_mode?: "viewer_count_desc" | "engagement_priority";
+  }) {
     return request<LiveStreamersResponse>({
       method: "GET",
       path: "/api/streams/live",

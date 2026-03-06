@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import get_streaming_store, get_twitch_client
 from app.api.models.twitch import ResolveChannelRequest, ResolveChannelResponse
-from app.storage import InMemoryStreamingStore
+from app.storage import StreamingStore
 from app.twitch.client import TwitchClient
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/twitch", tags=["twitch"])
 @router.post("/resolve-channel", response_model=ResolveChannelResponse)
 async def resolve_channel(
     request: ResolveChannelRequest,
-    store: InMemoryStreamingStore = Depends(get_streaming_store),
+    store: StreamingStore = Depends(get_streaming_store),
     twitch_client: TwitchClient = Depends(get_twitch_client),
 ) -> ResolveChannelResponse:
     logger.info("POST /twitch/resolve-channel input=%s", request.channel_input)

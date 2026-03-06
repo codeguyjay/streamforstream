@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from fastapi import Request
 
-from app.storage import InMemoryStreamingStore
+from app.storage import StreamingStore
 from app.twitch.client import TwitchClient
 
 
-def get_streaming_store(request: Request) -> InMemoryStreamingStore:
+def get_streaming_store(request: Request) -> StreamingStore:
     return request.app.state.streaming_store
 
 

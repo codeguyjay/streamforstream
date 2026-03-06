@@ -29,7 +29,7 @@ export function LiveStreamCard({ stream, selected = false, onSelect }: LiveStrea
       <div className="pill-row">
         <span className="pill live">{stream.viewer_count} viewers</span>
         <span className="pill">{stream.game_name || "Just Chatting"}</span>
-        <span className="pill">{stream.points_balance} pts</span>
+        <span className="pill">{stream.total_points} total pts</span>
       </div>
     </>
   );

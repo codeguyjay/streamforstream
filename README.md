@@ -5,7 +5,7 @@ Anonymous Twitch streamer discovery for creators who want to trade real viewing 
 ## Repo Layout
 
 - `frontend`: Next.js app for the landing page, anonymous session flow, instructions, and view board.
-- `backend`: FastAPI app with Twitch integration, in-memory live-stream storage, and point tracking.
+- `backend`: FastAPI app with Twitch integration, live-stream storage, and point tracking.
 - `docs`: Product and implementation notes.
 - `infra`: Placeholder for future CDK infrastructure work.
 
@@ -40,6 +40,17 @@ TWITCH_CLIENT_ID=your-twitch-client-id
 TWITCH_CLIENT_SECRET=your-twitch-client-secret
 TWITCH_SWEEPER_INTERVAL_SECONDS=300
 FRONTEND_ORIGIN=http://localhost:3000
+STREAMING_STORE_BACKEND=in_memory
+```
+
+Optional DynamoDB mode:
+
+```env
+STREAMING_STORE_BACKEND=dynamodb
+AWS_REGION=us-east-1
+DDB_ENDPOINT_URL=
+DDB_STREAMER_STATE_TABLE_NAME=your-streamer-state-table
+DDB_VIEW_REPORTS_TABLE_NAME=your-view-reports-table
 ```
 
 ### 3. Set up the frontend
@@ -101,10 +112,10 @@ Expected URL:
 
 - Stores the Twitch profile in a browser-session cookie called `streamforstream_session`
 - Validates channels against the real Twitch API
-- Tracks live streamers in backend memory only
+- Tracks live streamers in either backend memory or DynamoDB
 - Re-checks live streamers against Twitch on a background interval
-- Awards one point per reported viewing minute
-- Resets live streams and point totals when the backend restarts
+- Awards one point per reported viewing minute while debiting the watched streamer balance
+- Resets live streams and point totals when the backend restarts in `in_memory` mode
 
 ## Useful Commands
 
@@ -141,10 +152,10 @@ npx openapi-typescript-codegen --input ./openapi.json --output ./src/api
 - `TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be configured.`: your backend `.env.local` file is missing required values.
 - Docker cannot start the backend: make sure Docker Desktop is running and `backend/.env.local` exists.
 - Landing page loads but no streams appear: that is expected until at least one streamer goes live through the app.
-- Points or live status disappear after restarting the backend: all storage is in memory for this phase.
+- Points or live status disappear after restarting the backend: you are running with `STREAMING_STORE_BACKEND=in_memory`.
 
 ## Current Scope
 
 - No user accounts yet. The frontend stores the canonical Twitch profile in a browser-session cookie.
-- The backend keeps live streams, points, and dedupe keys in memory only.
+- The backend can run with in-memory storage for local/dev or DynamoDB for persistent ranking and points.
 - Twitch credentials are required for the backend because live validation and viewer counts use the real Twitch API.

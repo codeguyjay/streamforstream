@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -11,6 +11,8 @@ import { getErrorMessage } from "@/lib/errors";
 import { currentMinuteIso } from "@/lib/time";
 import { useSessionStore } from "@/state/sessionStore";
 
+const PAGE_SIZE = 12;
+
 export function ViewPage() {
   const router = useRouter();
   const session = useSessionStore((state) => state.session);
@@ -18,8 +20,10 @@ export function ViewPage() {
   const clearSession = useSessionStore((state) => state.clearSession);
   const [selectedChannelLogin, setSelectedChannelLogin] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [localPointsBalance, setLocalPointsBalance] = useState<number | null>(null);
-  const lastReportKeyRef = useRef<string | null>(null);
+  const [localTotalPoints, setLocalTotalPoints] = useState<number | null>(null);
+  const [localTotalPointsChannelLogin, setLocalTotalPointsChannelLogin] = useState<string | null>(null);
+  const [refreshNonce, setRefreshNonce] = useState(0);
+  const lastReportedMinuteRef = useRef<string | null>(null);
   const embedRef = useRef<TwitchEmbedHandle>(null);
 
   useEffect(() => {
@@ -28,18 +32,35 @@ export function ViewPage() {
     }
   }, [hydrated, router, session]);
 
-  const liveStreamsQuery = useQuery({
-    queryKey: ["view-live-streams", session?.channel_login],
-    queryFn: () =>
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setRefreshNonce((value) => value + 1);
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [session]);
+
+  const liveStreamsQuery = useInfiniteQuery({
+    queryKey: ["view-live-streams", session?.channel_login, refreshNonce],
+    queryFn: ({ pageParam }) =>
       StreamsService.getLive({
         exclude_channel_login: session?.channel_login,
-        limit: 12,
+        limit: PAGE_SIZE,
+        cursor: pageParam,
+        sort_mode: "engagement_priority",
       }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     enabled: Boolean(session),
-    refetchInterval: 30_000,
   });
-  const { data, error, isError, isLoading, refetch } = liveStreamsQuery;
-  const streams = data?.items ?? [];
+  const { data, error, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isLoading } = liveStreamsQuery;
+  const streams = data?.pages.flatMap((page) => page.items) ?? [];
   const effectiveSelectedChannelLogin =
     streams.some((item) => item.channel_login === selectedChannelLogin)
       ? selectedChannelLogin
@@ -54,18 +75,25 @@ export function ViewPage() {
       }
       return StreamsService.goLive({ channel_login: session.channel_login });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setMessage("Your channel is now on the live board.");
-      await refetch();
+      setRefreshNonce((value) => value + 1);
     },
-    onError: (error) => {
-      setMessage(getErrorMessage(error, "Unable to put your channel on the live board."));
+    onError: (mutationError) => {
+      setMessage(getErrorMessage(mutationError, "Unable to put your channel on the live board."));
     },
   });
 
   function handleEndSession() {
     clearSession();
     router.replace("/get-started");
+  }
+
+  function handleLoadMore() {
+    if (!hasNextPage || isFetchingNextPage) {
+      return;
+    }
+    void fetchNextPage();
   }
 
   useEffect(() => {
@@ -86,8 +114,7 @@ export function ViewPage() {
       }
 
       const viewedMinute = currentMinuteIso();
-      const reportKey = `${targetChannelLogin}:${viewedMinute}`;
-      if (lastReportKeyRef.current === reportKey) {
+      if (lastReportedMinuteRef.current === viewedMinute) {
         return;
       }
 
@@ -100,12 +127,15 @@ export function ViewPage() {
         if (cancelled) {
           return;
         }
-        lastReportKeyRef.current = reportKey;
-        setLocalPointsBalance(result.viewer_points_balance);
-        void refetch();
-      } catch (error) {
+        lastReportedMinuteRef.current = viewedMinute;
+        setLocalTotalPoints(result.viewer_total_points);
+        setLocalTotalPointsChannelLogin(viewerChannelLogin);
+        if (result.credited) {
+          setRefreshNonce((value) => value + 1);
+        }
+      } catch (reportError) {
         if (!cancelled) {
-          setMessage(getErrorMessage(error, "Unable to report viewing time right now."));
+          setMessage(getErrorMessage(reportError, "Unable to report viewing time right now."));
         }
       }
     }
@@ -119,14 +149,16 @@ export function ViewPage() {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [refetch, selectedStream, session]);
+  }, [selectedStream, session]);
 
   if (!hydrated || !session) {
     return <section className="panel"><p className="helper">Loading your session...</p></section>;
   }
 
-  const viewerPointsBalance = localPointsBalance ?? data?.viewer_points_balance ?? 0;
-  const viewerIsLive = data?.viewer_is_live ?? false;
+  const queryViewerTotalPoints = data?.pages[0]?.viewer_total_points;
+  const viewerTotalPoints =
+    queryViewerTotalPoints ?? (localTotalPointsChannelLogin === session.channel_login ? (localTotalPoints ?? 0) : 0);
+  const viewerIsLive = data?.pages[0]?.viewer_is_live ?? false;
 
   return (
     <div className="stack">
@@ -161,8 +193,8 @@ export function ViewPage() {
             <span className="stat-value">@{session.channel_login}</span>
           </article>
           <article className="stat-card">
-            <span className="stat-label">Points</span>
-            <span className="stat-value">{viewerPointsBalance}</span>
+            <span className="stat-label">Total Points</span>
+            <span className="stat-value">{viewerTotalPoints}</span>
           </article>
           <article className="stat-card">
             <span className="stat-label">Live Status</span>
@@ -214,17 +246,40 @@ export function ViewPage() {
           </div>
         </div>
 
-        {isLoading ? <p className="helper">Loading live streamers...</p> : null}
+        {isLoading && streams.length === 0 ? <p className="helper">Loading live streamers...</p> : null}
         {streams.length > 0 ? (
-          <div className="live-grid">
-            {streams.map((stream) => (
-              <LiveStreamCard
-                key={stream.channel_login}
-                onSelect={() => setSelectedChannelLogin(stream.channel_login)}
-                selected={effectiveSelectedChannelLogin === stream.channel_login}
-                stream={stream}
-              />
-            ))}
+          <>
+            <div className="live-grid">
+              {streams.map((stream) => (
+                <LiveStreamCard
+                  key={stream.channel_login}
+                  onSelect={() => setSelectedChannelLogin(stream.channel_login)}
+                  selected={effectiveSelectedChannelLogin === stream.channel_login}
+                  stream={stream}
+                />
+              ))}
+            </div>
+            {hasNextPage ? (
+              <div className="cta-row">
+                <button
+                  className="button-secondary"
+                  disabled={isFetchingNextPage}
+                  onClick={handleLoadMore}
+                  type="button"
+                >
+                  {isFetchingNextPage ? "Loading..." : "Load More"}
+                </button>
+              </div>
+            ) : null}
+            {isFetching && !isFetchingNextPage && streams.length > 0 ? (
+              <p className="helper">Refreshing the live board...</p>
+            ) : null}
+          </>
+        ) : null}
+        {!isLoading && streams.length === 0 ? (
+          <div className="empty-card">
+            <h3>No other streamers are live right now.</h3>
+            <p className="helper">Keep this page open and the list will refresh automatically every 30 seconds.</p>
           </div>
         ) : null}
       </section>

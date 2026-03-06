@@ -21,14 +21,16 @@ class LiveStreamerResponse(BaseModel):
     game_name: str
     viewer_count: int
     went_live_at: datetime
-    points_balance: int
+    total_points: int
 
 
 class LiveStreamersResponse(BaseModel):
     items: list[LiveStreamerResponse]
     checked_at: datetime
-    viewer_points_balance: int
+    viewer_total_points: int
     viewer_is_live: bool
+    next_cursor: str | None = None
+    has_more: bool
 
 
 class SuccessResponse(BaseModel):
