@@ -1,0 +1,30 @@
+{
+  "name": "streamforstream-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
+    "js-cookie": "^3.0.5",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20.17.10",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "16.1.6",
+    "openapi-typescript-codegen": "^0.29.0",
+    "typescript": "^5.7.2"
+  }
+}

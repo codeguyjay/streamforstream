@@ -1,0 +1,553 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StreamForStream API",
+    "description": "Backend API for the initial StreamForStream anonymous Twitch viewer exchange flow.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/twitch/resolve-channel": {
+      "post": {
+        "tags": [
+          "twitch"
+        ],
+        "summary": "Resolve Channel",
+        "operationId": "resolve_channel_api_twitch_resolve_channel_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveChannelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolveChannelResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/streams/live": {
+      "get": {
+        "tags": [
+          "streams"
+        ],
+        "summary": "Get Live Streamers",
+        "operationId": "get_live_streamers_api_streams_live_get",
+        "parameters": [
+          {
+            "name": "exclude_channel_login",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exclude Channel Login"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveStreamersResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/streams/go-live": {
+      "post": {
+        "tags": [
+          "streams"
+        ],
+        "summary": "Go Live",
+        "operationId": "go_live_api_streams_go_live_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoLiveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveStreamerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/streams/go-offline": {
+      "post": {
+        "tags": [
+          "streams"
+        ],
+        "summary": "Go Offline",
+        "operationId": "go_offline_api_streams_go_offline_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoOfflineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/views/report": {
+      "post": {
+        "tags": [
+          "views"
+        ],
+        "summary": "Report View",
+        "operationId": "report_view_api_views_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportViewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportViewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Root",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Read Root  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GoLiveRequest": {
+        "properties": {
+          "channel_login": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Channel Login"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_login"
+        ],
+        "title": "GoLiveRequest"
+      },
+      "GoOfflineRequest": {
+        "properties": {
+          "channel_login": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Channel Login"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_login"
+        ],
+        "title": "GoOfflineRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LiveStreamerResponse": {
+        "properties": {
+          "channel_login": {
+            "type": "string",
+            "title": "Channel Login"
+          },
+          "channel_display_name": {
+            "type": "string",
+            "title": "Channel Display Name"
+          },
+          "profile_image_url": {
+            "type": "string",
+            "title": "Profile Image Url"
+          },
+          "channel_url": {
+            "type": "string",
+            "title": "Channel Url"
+          },
+          "is_live": {
+            "type": "boolean",
+            "title": "Is Live"
+          },
+          "stream_title": {
+            "type": "string",
+            "title": "Stream Title"
+          },
+          "game_name": {
+            "type": "string",
+            "title": "Game Name"
+          },
+          "viewer_count": {
+            "type": "integer",
+            "title": "Viewer Count"
+          },
+          "went_live_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Went Live At"
+          },
+          "points_balance": {
+            "type": "integer",
+            "title": "Points Balance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_login",
+          "channel_display_name",
+          "profile_image_url",
+          "channel_url",
+          "is_live",
+          "stream_title",
+          "game_name",
+          "viewer_count",
+          "went_live_at",
+          "points_balance"
+        ],
+        "title": "LiveStreamerResponse"
+      },
+      "LiveStreamersResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LiveStreamerResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          },
+          "viewer_points_balance": {
+            "type": "integer",
+            "title": "Viewer Points Balance"
+          },
+          "viewer_is_live": {
+            "type": "boolean",
+            "title": "Viewer Is Live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "checked_at",
+          "viewer_points_balance",
+          "viewer_is_live"
+        ],
+        "title": "LiveStreamersResponse"
+      },
+      "ReportViewRequest": {
+        "properties": {
+          "viewer_channel_login": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Viewer Channel Login"
+          },
+          "target_channel_login": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Target Channel Login"
+          },
+          "viewed_minute": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Viewed Minute"
+          }
+        },
+        "type": "object",
+        "required": [
+          "viewer_channel_login",
+          "target_channel_login",
+          "viewed_minute"
+        ],
+        "title": "ReportViewRequest"
+      },
+      "ReportViewResponse": {
+        "properties": {
+          "credited": {
+            "type": "boolean",
+            "title": "Credited"
+          },
+          "viewer_points_balance": {
+            "type": "integer",
+            "title": "Viewer Points Balance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "credited",
+          "viewer_points_balance"
+        ],
+        "title": "ReportViewResponse"
+      },
+      "ResolveChannelRequest": {
+        "properties": {
+          "channel_input": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Channel Input"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_input"
+        ],
+        "title": "ResolveChannelRequest"
+      },
+      "ResolveChannelResponse": {
+        "properties": {
+          "channel_login": {
+            "type": "string",
+            "title": "Channel Login"
+          },
+          "channel_display_name": {
+            "type": "string",
+            "title": "Channel Display Name"
+          },
+          "profile_image_url": {
+            "type": "string",
+            "title": "Profile Image Url"
+          },
+          "channel_url": {
+            "type": "string",
+            "title": "Channel Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_login",
+          "channel_display_name",
+          "profile_image_url",
+          "channel_url"
+        ],
+        "title": "ResolveChannelResponse"
+      },
+      "SuccessResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "SuccessResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

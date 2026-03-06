@@ -1,1 +1,153 @@
-# streamforstream
+# StreamForStream
+
+Anonymous Twitch streamer discovery for creators who want to trade real viewing time and chat engagement.
+
+## Repo Layout
+
+- `frontend`: Next.js app for the landing page, anonymous session flow, instructions, and view board.
+- `backend`: FastAPI app with Twitch integration, in-memory live-stream storage, and point tracking.
+- `docs`: Product and implementation notes.
+- `infra`: Placeholder for future CDK infrastructure work.
+
+## Prerequisites
+
+- Python 3.11+ with `pip`
+- Node.js 20+ with `npm`
+- A Twitch developer application with a `Client ID` and `Client Secret`
+
+## One-Time Setup
+
+### 1. Create Twitch API credentials
+
+- Create or use an existing Twitch developer application.
+- Copy the Twitch `Client ID`.
+- Copy the Twitch `Client Secret`.
+- Keep both values ready for the backend `.env` file.
+
+### 2. Set up the backend
+
+From the repo root:
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Then edit `backend/.env` and set:
+
+```env
+TWITCH_CLIENT_ID=your-twitch-client-id
+TWITCH_CLIENT_SECRET=your-twitch-client-secret
+TWITCH_SWEEPER_INTERVAL_SECONDS=300
+FRONTEND_ORIGIN=http://localhost:3000
+```
+
+### 3. Set up the frontend
+
+Open a second terminal and run:
+
+```powershell
+cd frontend
+Copy-Item .env.example .env.local
+npm.cmd install
+```
+
+Then confirm `frontend/.env.local` contains:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+Note for PowerShell: use `npm.cmd` instead of `npm` if your machine blocks `npm.ps1` scripts.
+
+## Running The App
+
+### Terminal 1: backend
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+```
+
+Expected URLs:
+
+- API root: `http://localhost:8000/`
+- API docs: `http://localhost:8000/docs`
+- OpenAPI schema: `http://localhost:8000/openapi.json`
+
+### Terminal 2: frontend
+
+```powershell
+cd frontend
+npm.cmd run dev
+```
+
+Expected URL:
+
+- App: `http://localhost:3000`
+
+## First Run Checklist
+
+1. Open `http://localhost:3000`.
+2. Confirm the landing page loads.
+3. Click `Get Started`.
+4. Enter a Twitch handle or channel URL.
+5. After validation, confirm you are redirected to `/instructions`.
+6. Click `Start Viewing` to open the live board.
+7. If your Twitch channel is currently live, click `Go Live` and confirm it appears on the board.
+
+## What The Current Version Does
+
+- Stores the Twitch profile in a browser-session cookie called `streamforstream_session`
+- Validates channels against the real Twitch API
+- Tracks live streamers in backend memory only
+- Re-checks live streamers against Twitch on a background interval
+- Awards one point per reported viewing minute
+- Resets live streams and point totals when the backend restarts
+
+## Useful Commands
+
+### Backend
+
+```powershell
+cd backend
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm.cmd run dev
+npm.cmd run lint
+npm.cmd run build
+```
+
+### Regenerate the frontend OpenAPI client
+
+From the repo root after the backend is running:
+
+```powershell
+Invoke-WebRequest -Uri "http://localhost:8000/openapi.json" -OutFile "./frontend/openapi.json" -UseBasicParsing
+cd frontend
+npx openapi-typescript-codegen --input ./openapi.json --output ./src/api
+```
+
+## Troubleshooting
+
+- `This Twitch channel is not currently live.`: the backend successfully resolved the channel, but Twitch says it is offline.
+- `TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be configured.`: your backend `.env` file is missing required values.
+- Landing page loads but no streams appear: that is expected until at least one streamer goes live through the app.
+- Points or live status disappear after restarting the backend: all storage is in memory for this phase.
+
+## Current Scope
+
+- No user accounts yet. The frontend stores the canonical Twitch profile in a browser-session cookie.
+- The backend keeps live streams, points, and dedupe keys in memory only.
+- Twitch credentials are required for the backend because live validation and viewer counts use the real Twitch API.
