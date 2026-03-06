@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { StreamsService, ViewsService } from "@/api";
 import { LiveStreamCard } from "@/components/LiveStreamCard";
-import { TwitchEmbed } from "@/components/TwitchEmbed";
+import { TwitchEmbed, type TwitchEmbedHandle } from "@/components/TwitchEmbed";
 import { getErrorMessage } from "@/lib/errors";
 import { currentMinuteIso } from "@/lib/time";
 import { useSessionStore } from "@/state/sessionStore";
@@ -21,6 +21,7 @@ export function ViewPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [localPointsBalance, setLocalPointsBalance] = useState<number | null>(null);
   const lastReportKeyRef = useRef<string | null>(null);
+  const embedRef = useRef<TwitchEmbedHandle>(null);
 
   useEffect(() => {
     if (hydrated && !session) {
@@ -79,6 +80,9 @@ export function ViewPage() {
 
     async function maybeReportView() {
       if (document.visibilityState !== "visible") {
+        return;
+      }
+      if (embedRef.current?.isPaused() !== false) {
         return;
       }
 
@@ -173,57 +177,57 @@ export function ViewPage() {
         ) : null}
       </section>
 
-      <section className="split-grid">
-        <div className="panel stack">
-          <div className="panel-header">
-            <div>
-              <h2>Selected Stream</h2>
-              <p className="panel-subtitle">Stay active in chat while StreamForStream credits your viewing time.</p>
-            </div>
+      <section className="panel stack">
+        <div className="panel-header">
+          <div>
+            <h2>Selected Stream</h2>
+            <p className="panel-subtitle">Stay active in chat while StreamForStream credits your viewing time.</p>
           </div>
-
           {selectedStream ? (
-            <>
-              <TwitchEmbed channelLogin={selectedStream.channel_login} />
-              <div className="pill-row">
-                <span className="pill live">{selectedStream.viewer_count} viewers</span>
-                <span className="pill">{selectedStream.game_name || "Just Chatting"}</span>
-                <span className="pill">{selectedStream.stream_title || "Live now"}</span>
-              </div>
-              <Link className="button-ghost" href={selectedStream.channel_url} rel="noreferrer" target="_blank">
-                Open on Twitch
-              </Link>
-            </>
-          ) : (
-            <div className="empty-card">
-              <h3>No other streamers are live right now.</h3>
-              <p className="helper">Keep this page open and the list will refresh automatically every 30 seconds.</p>
-            </div>
-          )}
-        </div>
-
-        <div className="panel stack">
-          <div className="panel-header">
-            <div>
-              <h2>Who to watch</h2>
-              <p className="panel-subtitle">Sorted by current Twitch audience size.</p>
-            </div>
-          </div>
-
-          {isLoading ? <p className="helper">Loading live streamers...</p> : null}
-          {streams.length > 0 ? (
-            <div className="stack">
-              {streams.map((stream) => (
-                <LiveStreamCard
-                  key={stream.channel_login}
-                  onSelect={() => setSelectedChannelLogin(stream.channel_login)}
-                  selected={effectiveSelectedChannelLogin === stream.channel_login}
-                  stream={stream}
-                />
-              ))}
-            </div>
+            <Link className="button-ghost" href={selectedStream.channel_url} rel="noreferrer" target="_blank">
+              Open on Twitch
+            </Link>
           ) : null}
         </div>
+
+        {selectedStream ? (
+          <>
+            <TwitchEmbed ref={embedRef} channelLogin={selectedStream.channel_login} />
+            <div className="pill-row">
+              <span className="pill live">{selectedStream.viewer_count} viewers</span>
+              <span className="pill">{selectedStream.game_name || "Just Chatting"}</span>
+              <span className="pill">{selectedStream.stream_title || "Live now"}</span>
+            </div>
+          </>
+        ) : (
+          <div className="empty-card">
+            <h3>No other streamers are live right now.</h3>
+            <p className="helper">Keep this page open and the list will refresh automatically every 30 seconds.</p>
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <div>
+            <h2>Who to watch</h2>
+            <p className="panel-subtitle">Sorted by current Twitch audience size.</p>
+          </div>
+        </div>
+
+        {isLoading ? <p className="helper">Loading live streamers...</p> : null}
+        {streams.length > 0 ? (
+          <div className="live-grid">
+            {streams.map((stream) => (
+              <LiveStreamCard
+                key={stream.channel_login}
+                onSelect={() => setSelectedChannelLogin(stream.channel_login)}
+                selected={effectiveSelectedChannelLogin === stream.channel_login}
+                stream={stream}
+              />
+            ))}
+          </div>
+        ) : null}
       </section>
     </div>
   );
