@@ -16,6 +16,7 @@ export function ViewPage() {
   const router = useRouter();
   const session = useSessionStore((state) => state.session);
   const hydrated = useSessionStore((state) => state.hydrated);
+  const clearSession = useSessionStore((state) => state.clearSession);
   const [selectedChannelLogin, setSelectedChannelLogin] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [localPointsBalance, setLocalPointsBalance] = useState<number | null>(null);
@@ -62,21 +63,10 @@ export function ViewPage() {
     },
   });
 
-  const goOfflineMutation = useMutation({
-    mutationFn: () => {
-      if (!session) {
-        throw new Error("Add your Twitch channel before going offline.");
-      }
-      return StreamsService.goOffline({ channel_login: session.channel_login });
-    },
-    onSuccess: async () => {
-      setMessage("Your channel has been removed from the live board.");
-      await refetch();
-    },
-    onError: (error) => {
-      setMessage(getErrorMessage(error, "Unable to remove your channel right now."));
-    },
-  });
+  function handleEndSession() {
+    clearSession();
+    router.replace("/get-started");
+  }
 
   useEffect(() => {
     if (!session || !selectedStream) {
@@ -153,12 +143,11 @@ export function ViewPage() {
               {viewerIsLive ? "You Are Live" : goLiveMutation.isPending ? "Checking Twitch..." : "Go Live"}
             </button>
             <button
-              className="button-secondary"
-              disabled={goOfflineMutation.isPending || !viewerIsLive}
-              onClick={() => goOfflineMutation.mutate()}
+              className="button-ghost"
+              onClick={handleEndSession}
               type="button"
             >
-              {goOfflineMutation.isPending ? "Removing..." : "Stop Streaming"}
+              End Session
             </button>
           </div>
         </div>
@@ -178,7 +167,7 @@ export function ViewPage() {
           </article>
         </div>
 
-        {message ? <p className={goLiveMutation.isError || goOfflineMutation.isError ? "error-text" : "status-text"}>{message}</p> : null}
+        {message ? <p className={goLiveMutation.isError ? "error-text" : "status-text"}>{message}</p> : null}
         {isError ? (
           <p className="error-text">{getErrorMessage(error, "Unable to load the live board.")}</p>
         ) : null}
