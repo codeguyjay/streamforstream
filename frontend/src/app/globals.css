@@ -142,12 +142,26 @@ input {
   font-size: clamp(2.6rem, 4vw, 4.5rem);
 }
 
+.landing-hero-copy h1 {
+  font-size: clamp(2.15rem, 3vw, 3.25rem);
+  text-wrap: balance;
+}
+
+.landing-hero-copy .lede {
+  font-size: 1rem;
+}
+
 .lede {
   margin: 16px 0 0;
   max-width: 38rem;
   color: var(--muted);
   font-size: 1.08rem;
   line-height: 1.65;
+}
+
+.hero-steps-label {
+  margin: 24px 0 10px;
+  font-weight: 700;
 }
 
 .cta-row {
@@ -210,6 +224,19 @@ input {
 
 .panel {
   padding: 28px;
+}
+
+.hero-media-panel {
+  gap: 12px;
+  align-content: start;
+}
+
+.hero-media-panel h2 {
+  font-size: clamp(1.45rem, 1.8vw, 1.9rem);
+}
+
+.hero-media-panel .twitch-frame {
+  min-height: 380px;
 }
 
 .panel-header {
@@ -411,7 +438,15 @@ input {
     font-size: 2.45rem;
   }
 
+  .landing-hero-copy h1 {
+    font-size: 2rem;
+  }
+
   .twitch-frame {
     min-height: 400px;
+  }
+
+  .hero-media-panel .twitch-frame {
+    min-height: 300px;
   }
 }

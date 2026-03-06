@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -181,13 +180,10 @@ export function ViewPage() {
         <div className="panel-header">
           <div>
             <h2>Selected Stream</h2>
-            <p className="panel-subtitle">Stay active in chat while StreamForStream credits your viewing time.</p>
+            <p className="panel-subtitle">
+              Make sure stream is playing to start earning points. Engage in chat to start building connections!
+            </p>
           </div>
-          {selectedStream ? (
-            <Link className="button-ghost" href={selectedStream.channel_url} rel="noreferrer" target="_blank">
-              Open on Twitch
-            </Link>
-          ) : null}
         </div>
 
         {selectedStream ? (
@@ -210,8 +206,11 @@ export function ViewPage() {
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2>Who to watch</h2>
-            <p className="panel-subtitle">Sorted by current Twitch audience size.</p>
+            <h2>Select a streamer</h2>
+            <p className="panel-subtitle">
+              We recommend lower viewer streamers with higher points first to help make sure everyone has someone to
+              engage with!
+            </p>
           </div>
         </div>
 

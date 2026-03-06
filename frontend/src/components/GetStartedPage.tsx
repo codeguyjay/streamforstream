@@ -50,9 +50,7 @@ export function GetStartedPage() {
       <div>
         <p className="eyebrow">Step 1</p>
         <h1>Add your Twitch channel</h1>
-        <p className="lede">
-          This version stays frictionless: no account creation, just a session cookie with your Twitch profile.
-        </p>
+        <p className="lede">Start viewing with as little friction as possible.</p>
       </div>
 
       <form className="input-row" onSubmit={handleSubmit}>
@@ -76,11 +74,7 @@ export function GetStartedPage() {
         </div>
       </form>
 
-      {message ? (
-        <p className={resolveChannelMutation.isError ? "error-text" : "status-text"}>{message}</p>
-      ) : (
-        <p className="helper">We will canonicalize the Twitch channel and keep it in a browser-session cookie.</p>
-      )}
+      {message ? <p className={resolveChannelMutation.isError ? "error-text" : "status-text"}>{message}</p> : null}
     </section>
   );
 }

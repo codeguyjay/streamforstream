@@ -28,39 +28,27 @@ export function LandingPage() {
     <div className="stack">
       <section className="hero-card">
         <div className="hero-grid">
-          <div>
+          <div className="landing-hero-copy">
             <p className="eyebrow">Organic Twitch Discovery</p>
-            <h1>Trade live attention with streamers who are showing up right now.</h1>
+            <h1>Earn points by spending time in other creators&apos; channels.</h1>
             <p className="lede">
-              Add your Twitch channel, spend time in other creators&apos; chats, build points minute by minute,
-              and go live when you want StreamForStream to push your channel to the front.
+              Use those points to receive viewership from other members in the community. No logins or purchasing
+              needed.
             </p>
+            <p className="hero-steps-label">Steps</p>
+            <ol className="list">
+              <li>Add your Twitch channel.</li>
+              <li>Start viewing peer streams to earn points.</li>
+              <li>Click Go Live when you are streaming and we&apos;ll monitor and promote your stream.</li>
+            </ol>
             <div className="cta-row">
               <Link className="button-primary" href="/get-started">
                 Get Started
               </Link>
-              <Link className="button-secondary" href="/view">
-                Start Viewing
-              </Link>
             </div>
           </div>
           <div className="panel stack hero-media-panel">
-            <div className="panel-header">
-              <div>
-                <p className="eyebrow">Live Preview</p>
-                <h2>{selectedStream ? selectedStream.channel_display_name : "Select a live streamer"}</h2>
-                <p className="panel-subtitle">
-                  {selectedStream
-                    ? "The player autoplays muted when Twitch allows it."
-                    : "Pick a live card below and the player will switch instantly."}
-                </p>
-              </div>
-              {selectedStream ? (
-                <Link className="button-ghost" href={selectedStream.channel_url} rel="noreferrer" target="_blank">
-                  Open on Twitch
-                </Link>
-              ) : null}
-            </div>
+            <h2>{selectedStream ? `Live Preview - ${selectedStream.channel_display_name}` : "Live Preview"}</h2>
 
             {liveStreamsQuery.isLoading && !selectedStream ? (
               <p className="helper">Loading a live stream preview...</p>
@@ -69,14 +57,7 @@ export function LandingPage() {
               <p className="error-text">{getErrorMessage(liveStreamsQuery.error, "Unable to load live streams.")}</p>
             ) : null}
             {selectedStream ? (
-              <>
-                <TwitchEmbed autoplay channelLogin={selectedStream.channel_login} muted showChat={false} />
-                <div className="pill-row">
-                  <span className="pill live">{selectedStream.viewer_count} viewers</span>
-                  <span className="pill">{selectedStream.game_name || "Just Chatting"}</span>
-                  <span className="pill">{selectedStream.stream_title || "Live now"}</span>
-                </div>
-              </>
+              <TwitchEmbed autoplay channelLogin={selectedStream.channel_login} muted showChat={false} />
             ) : null}
             {!liveStreamsQuery.isLoading && !liveStreamsQuery.isError && !selectedStream ? (
               <div className="empty-card">
@@ -92,7 +73,6 @@ export function LandingPage() {
         <div className="panel-header">
           <div>
             <h2>Streaming Right Now</h2>
-            <p className="panel-subtitle">Live channels are ranked by viewer count. Click any card to switch the player above.</p>
           </div>
         </div>
 

@@ -24,7 +24,7 @@ export default function RootLayout({
                 <span className="brand-mark">SFS</span>
                 <span>
                   <strong>StreamForStream</strong>
-                  <span className="brand-subtitle">Twitch viewers trading time, not gimmicks.</span>
+                  <span className="brand-subtitle">Build each other up. Never Stream Alone.</span>
                 </span>
               </Link>
             </header>
