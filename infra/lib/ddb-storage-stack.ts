@@ -51,7 +51,7 @@ export class DdbStorageStack extends cdk.Stack {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    this.viewReportsTable = new dynamodb.Table(this, "ViewReportsTableV2", {
+    this.viewReportsTable = new dynamodb.Table(this, "ViewReportsTable", {
       tableName: VIEW_REPORTS_TABLE_NAME,
       partitionKey: {
         name: "viewer_id",
@@ -75,17 +75,6 @@ export class DdbStorageStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
-    });
-
-    new cdk.CfnOutput(this, "StreamerStateTableName", {
-      value: this.streamerStateTable.tableName,
-      description: "Primary streamer state table",
-      exportName: "StreamBatonStreamerStateTableName",
-    });
-    new cdk.CfnOutput(this, "ViewReportsTableName", {
-      value: this.viewReportsTable.tableName,
-      description: "Deduplicated viewing minute reports table",
-      exportName: "StreamBatonViewReportsTableName",
     });
   }
 }

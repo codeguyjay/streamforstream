@@ -18,4 +18,4 @@ export const FRONTEND_APP_ROOT = "frontend";
 
 export const FRONTEND_APP_NAME = "streambaton-frontend";
 export const STREAMER_STATE_TABLE_NAME = "streambaton-streamer-state";
-export const VIEW_REPORTS_TABLE_NAME = "streambaton-view-reports";
+export const VIEW_REPORTS_TABLE_NAME = "streambaton-view-reports-v2";
