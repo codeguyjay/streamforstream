@@ -146,8 +146,8 @@ export function ViewPage() {
   }
 
   const queryViewerTotalPoints = data?.pages[0]?.viewer_total_points;
-  const viewerTotalPoints =
-    queryViewerTotalPoints ?? (localTotalPointsChannelLogin === session.channel_login ? (localTotalPoints ?? 0) : 0);
+  const localPointsValid = localTotalPointsChannelLogin === session.channel_login && localTotalPoints !== null;
+  const viewerTotalPoints = localPointsValid ? localTotalPoints : (queryViewerTotalPoints ?? 0);
   const viewerIsLive = data?.pages[0]?.viewer_is_live ?? false;
 
   return (
