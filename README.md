@@ -49,10 +49,15 @@ Optional DynamoDB mode:
 ```env
 STREAMING_STORE_BACKEND=dynamodb
 AWS_REGION=us-west-2
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_SESSION_TOKEN=
 DDB_ENDPOINT_URL=
 DDB_STREAMER_STATE_TABLE_NAME=your-streamer-state-table
 DDB_VIEW_REPORTS_TABLE_NAME=your-view-reports-table
 ```
+
+When using `docker run --env-file .env.local`, do not wrap values in quotes. Docker passes those quotes through literally.
 
 ### 3. Set up the frontend
 

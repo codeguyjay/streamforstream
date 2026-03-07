@@ -34,9 +34,12 @@ Optional:
 - `FRONTEND_ORIGINS` (comma-separated override when the backend should allow multiple frontend domains)
 - `STREAMING_STORE_BACKEND` (`in_memory` by default, or `dynamodb`)
 - `AWS_REGION` / `AWS_DEFAULT_REGION`
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (`AWS_SESSION_TOKEN` too when using temporary creds locally)
 - `DDB_ENDPOINT_URL`
 - `DDB_STREAMER_STATE_TABLE_NAME`
 - `DDB_VIEW_REPORTS_TABLE_NAME`
+
+If you run DynamoDB mode with Docker locally, pass standard AWS SDK credentials in the env file or mount a shared AWS config into the container. Do not wrap env values in quotes when using `docker run --env-file`.
 
 ## Build And Run With Docker
 

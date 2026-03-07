@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -12,7 +13,9 @@ from app.api import routes_streams, routes_twitch, routes_views
 from app.storage import create_storage_from_env
 from app.twitch.client import TwitchClient
 
-load_dotenv()
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(BACKEND_ROOT / ".env.local")
+load_dotenv(BACKEND_ROOT / ".env")
 
 log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level, logging.INFO))

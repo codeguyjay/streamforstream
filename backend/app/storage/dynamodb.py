@@ -106,6 +106,9 @@ class DynamoDBStreamingStore:
         endpoint_url: str | None,
         streamer_state_table_name: str,
         view_reports_table_name: str,
+        aws_access_key_id: str | None,
+        aws_secret_access_key: str | None,
+        aws_session_token: str | None,
     ) -> None:
         if boto3 is None or Key is None or TypeSerializer is None:
             raise RuntimeError("boto3 is required when STREAMING_STORE_BACKEND=dynamodb.")
@@ -114,8 +117,26 @@ class DynamoDBStreamingStore:
                 "DDB_STREAMER_STATE_TABLE_NAME and DDB_VIEW_REPORTS_TABLE_NAME are required when "
                 "STREAMING_STORE_BACKEND=dynamodb."
             )
+        if bool(aws_access_key_id) != bool(aws_secret_access_key):
+            raise RuntimeError(
+                "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must both be set when either is provided."
+            )
+        if aws_session_token and not aws_access_key_id:
+            raise RuntimeError(
+                "AWS_SESSION_TOKEN requires AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+            )
 
-        dynamodb = boto3.resource("dynamodb", region_name=region_name, endpoint_url=endpoint_url)
+        resource_kwargs: dict[str, Any] = {
+            "region_name": region_name,
+            "endpoint_url": endpoint_url,
+        }
+        if aws_access_key_id and aws_secret_access_key:
+            resource_kwargs["aws_access_key_id"] = aws_access_key_id
+            resource_kwargs["aws_secret_access_key"] = aws_secret_access_key
+            if aws_session_token:
+                resource_kwargs["aws_session_token"] = aws_session_token
+
+        dynamodb = boto3.resource("dynamodb", **resource_kwargs)
         self._streamer_state_table = dynamodb.Table(streamer_state_table_name)
         self._view_reports_table = dynamodb.Table(view_reports_table_name)
         self._streamer_state_table_name = streamer_state_table_name
@@ -601,10 +622,16 @@ def create_dynamodb_storage(
     endpoint_url: str | None,
     streamer_state_table_name: str,
     view_reports_table_name: str,
+    aws_access_key_id: str | None,
+    aws_secret_access_key: str | None,
+    aws_session_token: str | None,
 ) -> DynamoDBStreamingStore:
     return DynamoDBStreamingStore(
         region_name=region_name,
         endpoint_url=endpoint_url,
         streamer_state_table_name=streamer_state_table_name,
         view_reports_table_name=view_reports_table_name,
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        aws_session_token=aws_session_token,
     )
