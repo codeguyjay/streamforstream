@@ -19,14 +19,25 @@ The current app does not use Cognito, so there is no auth stack yet.
 - Existing Secrets Manager secret `twitch/api` in `us-west-2`
   - JSON keys: `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`
   - This repo reuses the same Twitch secret name as `gamenight`
-- Secrets Manager secret `streambaton/github-token` in `us-west-2`
+- Existing Secrets Manager secret `gamenite/github-token` in `us-west-2`
   - Plain string value containing a GitHub PAT with access to `codeguyjay/streamforstream`
 
-Create the GitHub token secret if needed:
+This reuses the same GitHub token secret as `gamenight`, so you should not need a second GitHub PAT secret unless you want to rotate or separate access later.
+
+Create or update that shared GitHub token secret if needed:
 
 ```powershell
 aws secretsmanager create-secret `
-  --name streambaton/github-token `
+  --name gamenite/github-token `
+  --secret-string "YOUR_GITHUB_PAT" `
+  --region us-west-2
+```
+
+If the secret already exists, update it instead:
+
+```powershell
+aws secretsmanager put-secret-value `
+  --secret-id gamenite/github-token `
   --secret-string "YOUR_GITHUB_PAT" `
   --region us-west-2
 ```

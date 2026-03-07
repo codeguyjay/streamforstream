@@ -9,7 +9,7 @@ export const FRONTEND_ORIGINS = [
 ];
 
 export const TWITCH_SECRET_NAME = "twitch/api";
-export const GITHUB_TOKEN_SECRET_NAME = "streambaton/github-token";
+export const GITHUB_TOKEN_SECRET_NAME = "gamenite/github-token";
 
 export const GITHUB_OWNER = "codeguyjay";
 export const GITHUB_REPO = "streamforstream";
