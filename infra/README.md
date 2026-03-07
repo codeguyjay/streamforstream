@@ -19,16 +19,16 @@ The current app does not use Cognito, so there is no auth stack yet.
 - Existing Secrets Manager secret `twitch/api` in `us-west-2`
   - JSON keys: `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`
   - This repo reuses the same Twitch secret name as `gamenight`
-- Existing Secrets Manager secret `gamenite/github-token` in `us-west-2`
+- Existing Secrets Manager secret `streambaton/github-token` in `us-west-2`
   - Plain string value containing a GitHub PAT with access to `codeguyjay/streamforstream`
 
-This reuses the same GitHub token secret as `gamenight`, so you should not need a second GitHub PAT secret unless you want to rotate or separate access later.
+Use a StreamBaton-specific PAT here so Amplify can be isolated from the `gamenight` repo token.
 
-Create or update that shared GitHub token secret if needed:
+Create or update that StreamBaton GitHub token secret if needed:
 
 ```powershell
 aws secretsmanager create-secret `
-  --name gamenite/github-token `
+  --name streambaton/github-token `
   --secret-string "YOUR_GITHUB_PAT" `
   --region us-west-2
 ```
@@ -37,7 +37,7 @@ If the secret already exists, update it instead:
 
 ```powershell
 aws secretsmanager put-secret-value `
-  --secret-id gamenite/github-token `
+  --secret-id streambaton/github-token `
   --secret-string "YOUR_GITHUB_PAT" `
   --region us-west-2
 ```
