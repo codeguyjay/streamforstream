@@ -6,9 +6,13 @@ from typing import Literal
 
 
 SortMode = Literal["viewer_count_desc", "engagement_priority"]
+ViewerType = Literal["unregistered_viewer"]
 
 VIEWER_COUNT_DESC: SortMode = "viewer_count_desc"
 ENGAGEMENT_PRIORITY: SortMode = "engagement_priority"
+
+UNREGISTERED_VIEWER: ViewerType = "unregistered_viewer"
+POINTS_PER_VIEW = 10
 
 
 def utc_now() -> datetime:

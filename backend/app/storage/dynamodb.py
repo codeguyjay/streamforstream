@@ -8,6 +8,7 @@ from typing import Any, Callable
 
 from app.domain.streaming import (
     ENGAGEMENT_PRIORITY,
+    POINTS_PER_VIEW,
     VIEWER_COUNT_DESC,
     LiveStreamRecord,
     PaginatedLiveStreamResult,
@@ -16,6 +17,7 @@ from app.domain.streaming import (
     SortMode,
     StreamState,
     ViewCreditResult,
+    ViewerType,
     utc_now,
 )
 
@@ -174,10 +176,10 @@ class DynamoDBStreamingStore:
         )
         return response.get("Item")
 
-    def _view_report_exists(self, viewer_channel_login: str, viewed_minute: str) -> bool:
+    def _view_report_exists(self, viewer_id: str, viewed_minute: str) -> bool:
         response = self._view_reports_table.get_item(
             Key={
-                "viewer_channel_login": _normalize_channel_login(viewer_channel_login),
+                "viewer_id": viewer_id,
                 "viewed_minute": viewed_minute,
             },
             ConsistentRead=True,
@@ -494,53 +496,55 @@ class DynamoDBStreamingStore:
     def apply_view_report(
         self,
         *,
-        viewer_channel_login: str,
-        target_channel_login: str,
+        viewer_id: str,
+        viewer_type: ViewerType,
+        earning_channel_login: str,
+        viewed_channel_login: str,
         viewed_minute: str,
     ) -> ViewCreditResult:
-        viewer_login = _normalize_channel_login(viewer_channel_login)
-        target_login = _normalize_channel_login(target_channel_login)
-        if viewer_login == target_login:
+        earning_login = _normalize_channel_login(earning_channel_login)
+        viewed_login = _normalize_channel_login(viewed_channel_login)
+        if earning_login == viewed_login:
             raise ValueError("A streamer cannot earn points by viewing their own channel.")
 
         for attempt in range(MAX_WRITE_RETRIES):
-            if self._view_report_exists(viewer_login, viewed_minute):
-                viewer_state = self.get_point_state(viewer_login)
+            if self._view_report_exists(viewer_id, viewed_minute):
+                earning_state = self.get_point_state(earning_login)
                 return ViewCreditResult(
                     credited=False,
-                    viewer_points_balance=viewer_state.point_balance,
-                    viewer_total_points=viewer_state.total_points,
+                    viewer_points_balance=earning_state.point_balance,
+                    viewer_total_points=earning_state.total_points,
                 )
 
-            viewer_item = self._get_streamer_item(viewer_login, consistent=True)
-            target_item = self._get_streamer_item(target_login, consistent=True)
-            viewer_state = self._item_to_point_state(viewer_item)
-            target_state = self._item_to_point_state(target_item)
+            earning_item = self._get_streamer_item(earning_login, consistent=True)
+            viewed_item = self._get_streamer_item(viewed_login, consistent=True)
+            earning_state = self._item_to_point_state(earning_item)
+            viewed_state = self._item_to_point_state(viewed_item)
             now = utc_now()
 
-            viewer_next = dict(viewer_item or {"channel_login": viewer_login})
-            viewer_next.update(
+            earning_next = dict(earning_item or {"channel_login": earning_login})
+            earning_next.update(
                 {
-                    "channel_login": viewer_login,
-                    "point_balance": viewer_state.point_balance + 1,
-                    "total_points": viewer_state.total_points + 1,
+                    "channel_login": earning_login,
+                    "point_balance": earning_state.point_balance + POINTS_PER_VIEW,
+                    "total_points": earning_state.total_points + POINTS_PER_VIEW,
                     "updated_at": _serialize_datetime(now),
-                    "version": self._next_version(viewer_item),
+                    "version": self._next_version(earning_item),
                 }
             )
-            self._refresh_live_indexes(viewer_next)
+            self._refresh_live_indexes(earning_next)
 
-            target_next = dict(target_item or {"channel_login": target_login})
-            target_next.update(
+            viewed_next = dict(viewed_item or {"channel_login": viewed_login})
+            viewed_next.update(
                 {
-                    "channel_login": target_login,
-                    "point_balance": max(0, target_state.point_balance - 1),
-                    "total_points": target_state.total_points,
+                    "channel_login": viewed_login,
+                    "point_balance": max(0, viewed_state.point_balance - POINTS_PER_VIEW),
+                    "total_points": viewed_state.total_points,
                     "updated_at": _serialize_datetime(now),
-                    "version": self._next_version(target_item),
+                    "version": self._next_version(viewed_item),
                 }
             )
-            self._refresh_live_indexes(target_next)
+            self._refresh_live_indexes(viewed_next)
 
             try:
                 self._client.transact_write_items(
@@ -550,43 +554,45 @@ class DynamoDBStreamingStore:
                                 "TableName": self._view_reports_table_name,
                                 "Item": self._serialize_item(
                                     {
-                                        "viewer_channel_login": viewer_login,
+                                        "viewer_id": viewer_id,
+                                        "viewer_type": viewer_type,
+                                        "earning_channel_login": earning_login,
+                                        "viewed_channel_login": viewed_login,
                                         "viewed_minute": viewed_minute,
-                                        "target_channel_login": target_login,
                                         "credited_at": _serialize_datetime(now),
                                     }
                                 ),
-                                "ConditionExpression": "attribute_not_exists(#viewer_channel_login) AND "
+                                "ConditionExpression": "attribute_not_exists(#viewer_id) AND "
                                 "attribute_not_exists(#viewed_minute)",
                                 "ExpressionAttributeNames": {
-                                    "#viewer_channel_login": "viewer_channel_login",
+                                    "#viewer_id": "viewer_id",
                                     "#viewed_minute": "viewed_minute",
                                 },
                             }
                         },
-                        {"Put": self._build_transact_put(viewer_next, viewer_item)},
-                        {"Put": self._build_transact_put(target_next, target_item)},
+                        {"Put": self._build_transact_put(earning_next, earning_item)},
+                        {"Put": self._build_transact_put(viewed_next, viewed_item)},
                     ]
                 )
                 return ViewCreditResult(
                     credited=True,
-                    viewer_points_balance=viewer_state.point_balance + 1,
-                    viewer_total_points=viewer_state.total_points + 1,
+                    viewer_points_balance=earning_state.point_balance + POINTS_PER_VIEW,
+                    viewer_total_points=earning_state.total_points + POINTS_PER_VIEW,
                 )
             except ClientError as exc:
-                if self._view_report_exists(viewer_login, viewed_minute):
-                    current_viewer_state = self.get_point_state(viewer_login)
+                if self._view_report_exists(viewer_id, viewed_minute):
+                    current_earning_state = self.get_point_state(earning_login)
                     return ViewCreditResult(
                         credited=False,
-                        viewer_points_balance=current_viewer_state.point_balance,
-                        viewer_total_points=current_viewer_state.total_points,
+                        viewer_points_balance=current_earning_state.point_balance,
+                        viewer_total_points=current_earning_state.total_points,
                     )
                 if self._is_conditional_failure(exc) and attempt < MAX_WRITE_RETRIES - 1:
-                    logger.info("Retrying view report transaction after DynamoDB contention for %s", viewer_login)
+                    logger.info("Retrying view report transaction after DynamoDB contention for %s", viewer_id)
                     continue
                 raise
 
-        raise RuntimeError(f"Failed to apply view report for {viewer_login} after retries.")
+        raise RuntimeError(f"Failed to apply view report for {viewer_id} after retries.")
 
 
 def create_dynamodb_storage(

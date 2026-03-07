@@ -10,6 +10,7 @@ from app.domain.streaming import (
     SortMode,
     StreamState,
     ViewCreditResult,
+    ViewerType,
 )
 
 
@@ -42,7 +43,9 @@ class StreamingStore(Protocol):
     def apply_view_report(
         self,
         *,
-        viewer_channel_login: str,
-        target_channel_login: str,
+        viewer_id: str,
+        viewer_type: ViewerType,
+        earning_channel_login: str,
+        viewed_channel_login: str,
         viewed_minute: str,
     ) -> ViewCreditResult: ...

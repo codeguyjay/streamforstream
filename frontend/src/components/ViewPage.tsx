@@ -113,8 +113,8 @@ export function ViewPage() {
 
       try {
         const result = await ViewsService.reportView({
-          viewer_channel_login: viewerChannelLogin,
-          target_channel_login: targetChannelLogin,
+          earning_channel_login: viewerChannelLogin,
+          viewed_channel_login: targetChannelLogin,
           viewed_minute: viewedMinute,
         });
         if (cancelled) {

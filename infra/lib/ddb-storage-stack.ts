@@ -51,10 +51,10 @@ export class DdbStorageStack extends cdk.Stack {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    this.viewReportsTable = new dynamodb.Table(this, "ViewReportsTable", {
+    this.viewReportsTable = new dynamodb.Table(this, "ViewReportsTableV2", {
       tableName: VIEW_REPORTS_TABLE_NAME,
       partitionKey: {
-        name: "viewer_channel_login",
+        name: "viewer_id",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
@@ -63,6 +63,18 @@ export class DdbStorageStack extends cdk.Stack {
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+    this.viewReportsTable.addGlobalSecondaryIndex({
+      indexName: "earning_channel",
+      partitionKey: {
+        name: "earning_channel_login",
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: "viewed_minute",
+        type: dynamodb.AttributeType.STRING,
+      },
+      projectionType: dynamodb.ProjectionType.ALL,
     });
 
     new cdk.CfnOutput(this, "StreamerStateTableName", {

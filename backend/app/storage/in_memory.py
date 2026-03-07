@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from app.domain.streaming import (
     ENGAGEMENT_PRIORITY,
+    POINTS_PER_VIEW,
     VIEWER_COUNT_DESC,
     LiveStreamRecord,
     PaginatedLiveStreamResult,
@@ -12,6 +13,7 @@ from app.domain.streaming import (
     SortMode,
     StreamState,
     ViewCreditResult,
+    ViewerType,
     utc_now,
 )
 
@@ -143,43 +145,45 @@ class InMemoryStreamingStore:
     def apply_view_report(
         self,
         *,
-        viewer_channel_login: str,
-        target_channel_login: str,
+        viewer_id: str,
+        viewer_type: ViewerType,
+        earning_channel_login: str,
+        viewed_channel_login: str,
         viewed_minute: str,
     ) -> ViewCreditResult:
-        viewer_login = _normalize_channel_login(viewer_channel_login)
-        target_login = _normalize_channel_login(target_channel_login)
-        if viewer_login == target_login:
+        earning_login = _normalize_channel_login(earning_channel_login)
+        viewed_login = _normalize_channel_login(viewed_channel_login)
+        if earning_login == viewed_login:
             raise ValueError("A streamer cannot earn points by viewing their own channel.")
 
-        key = (viewer_login, viewed_minute)
-        viewer_state = self._ensure_point_state(viewer_login)
-        target_state = self._ensure_point_state(target_login)
+        key = (viewer_id, viewed_minute)
+        earning_state = self._ensure_point_state(earning_login)
+        viewed_state = self._ensure_point_state(viewed_login)
 
         if key in self._credited_minutes:
             return ViewCreditResult(
                 credited=False,
-                viewer_points_balance=viewer_state.point_balance,
-                viewer_total_points=viewer_state.total_points,
+                viewer_points_balance=earning_state.point_balance,
+                viewer_total_points=earning_state.total_points,
             )
 
         self._credited_minutes.add(key)
 
-        next_viewer_state = PointState(
-            point_balance=viewer_state.point_balance + 1,
-            total_points=viewer_state.total_points + 1,
+        next_earning_state = PointState(
+            point_balance=earning_state.point_balance + POINTS_PER_VIEW,
+            total_points=earning_state.total_points + POINTS_PER_VIEW,
         )
-        next_target_state = PointState(
-            point_balance=max(0, target_state.point_balance - 1),
-            total_points=target_state.total_points,
+        next_viewed_state = PointState(
+            point_balance=max(0, viewed_state.point_balance - POINTS_PER_VIEW),
+            total_points=viewed_state.total_points,
         )
-        self._set_point_state(viewer_login, next_viewer_state)
-        self._set_point_state(target_login, next_target_state)
+        self._set_point_state(earning_login, next_earning_state)
+        self._set_point_state(viewed_login, next_viewed_state)
 
         return ViewCreditResult(
             credited=True,
-            viewer_points_balance=next_viewer_state.point_balance,
-            viewer_total_points=next_viewer_state.total_points,
+            viewer_points_balance=next_earning_state.point_balance,
+            viewer_total_points=next_earning_state.total_points,
         )
 
 
