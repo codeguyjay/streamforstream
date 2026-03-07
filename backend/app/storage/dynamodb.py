@@ -136,12 +136,12 @@ class DynamoDBStreamingStore:
             if aws_session_token:
                 resource_kwargs["aws_session_token"] = aws_session_token
 
-        dynamodb = boto3.resource("dynamodb", **resource_kwargs)
-        self._streamer_state_table = dynamodb.Table(streamer_state_table_name)
-        self._view_reports_table = dynamodb.Table(view_reports_table_name)
+        dynamodb_resource = boto3.resource("dynamodb", **resource_kwargs)
+        self._streamer_state_table = dynamodb_resource.Table(streamer_state_table_name)
+        self._view_reports_table = dynamodb_resource.Table(view_reports_table_name)
         self._streamer_state_table_name = streamer_state_table_name
         self._view_reports_table_name = view_reports_table_name
-        self._client = dynamodb.meta.client
+        self._client = boto3.client("dynamodb", **resource_kwargs)
         self._serializer = TypeSerializer()
 
     def _serialize_item(self, item: dict[str, Any]) -> dict[str, Any]:
@@ -525,6 +525,13 @@ class DynamoDBStreamingStore:
     ) -> ViewCreditResult:
         earning_login = _normalize_channel_login(earning_channel_login)
         viewed_login = _normalize_channel_login(viewed_channel_login)
+        viewed_minute = viewed_minute.strip()
+        if not earning_login:
+            raise ValueError("earning_channel_login is required.")
+        if not viewed_login:
+            raise ValueError("viewed_channel_login is required.")
+        if not viewed_minute:
+            raise ValueError("viewed_minute is required.")
         if earning_login == viewed_login:
             raise ValueError("A streamer cannot earn points by viewing their own channel.")
 
@@ -601,6 +608,15 @@ class DynamoDBStreamingStore:
                     viewer_total_points=earning_state.total_points + POINTS_PER_VIEW,
                 )
             except ClientError as exc:
+                if exc.response.get("Error", {}).get("Code") == "TransactionCanceledException":
+                    logger.warning(
+                        "View report transaction cancelled viewer_id=%s earning=%s viewed=%s minute=%s reasons=%s",
+                        viewer_id,
+                        earning_login,
+                        viewed_login,
+                        viewed_minute,
+                        exc.response.get("CancellationReasons"),
+                    )
                 if self._view_report_exists(viewer_id, viewed_minute):
                     current_earning_state = self.get_point_state(earning_login)
                     return ViewCreditResult(

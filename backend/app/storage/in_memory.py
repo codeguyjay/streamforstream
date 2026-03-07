@@ -153,6 +153,13 @@ class InMemoryStreamingStore:
     ) -> ViewCreditResult:
         earning_login = _normalize_channel_login(earning_channel_login)
         viewed_login = _normalize_channel_login(viewed_channel_login)
+        viewed_minute = viewed_minute.strip()
+        if not earning_login:
+            raise ValueError("earning_channel_login is required.")
+        if not viewed_login:
+            raise ValueError("viewed_channel_login is required.")
+        if not viewed_minute:
+            raise ValueError("viewed_minute is required.")
         if earning_login == viewed_login:
             raise ValueError("A streamer cannot earn points by viewing their own channel.")
 

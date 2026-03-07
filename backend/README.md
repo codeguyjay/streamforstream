@@ -70,6 +70,6 @@ docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 
 - The image does not include your `.env.local` file. You must provide env vars at runtime.
 - `STREAMING_STORE_BACKEND=in_memory` is still the default local fallback.
-- DynamoDB mode expects an existing `streamer_state` table with `live_viewers` and `live_engagement` GSIs, plus a `view_reports` table keyed by `viewer_channel_login` / `viewed_minute`.
+- DynamoDB mode expects an existing `streamer_state` table with `live_viewers` and `live_engagement` GSIs, plus a `view_reports` table keyed by `viewer_id` / `viewed_minute`.
 - Production AWS deploys can set `FRONTEND_ORIGINS=https://streambaton.tv,https://www.streambaton.tv` so both custom domains pass CORS.
 - No automated unit tests are included by request.
