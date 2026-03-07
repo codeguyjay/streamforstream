@@ -1,6 +1,5 @@
 import * as cdk from "aws-cdk-lib";
 import * as acm from "aws-cdk-lib/aws-certificatemanager";
-import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns";
@@ -13,9 +12,7 @@ import {
   API_DOMAIN_NAME,
   DOMAIN_NAME,
   FRONTEND_ORIGINS,
-  STREAMER_STATE_TABLE_NAME,
   TWITCH_SECRET_NAME,
-  VIEW_REPORTS_TABLE_NAME,
 } from "./config";
 
 export interface BackendStackProps extends cdk.StackProps {
@@ -26,16 +23,7 @@ export class BackendStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
 
-    const streamerStateTable = dynamodb.Table.fromTableName(
-      this,
-      "ImportedStreamerStateTable",
-      STREAMER_STATE_TABLE_NAME,
-    );
-    const viewReportsTable = dynamodb.Table.fromTableName(
-      this,
-      "ImportedViewReportsTable",
-      VIEW_REPORTS_TABLE_NAME,
-    );
+    const { streamerStateTable, viewReportsTable } = props.ddbStack;
 
     const vpc = new ec2.Vpc(this, "Vpc", { maxAzs: 2 });
     const cluster = new ecs.Cluster(this, "Cluster", { vpc });
@@ -76,8 +64,8 @@ export class BackendStack extends cdk.Stack {
             FRONTEND_ORIGIN: FRONTEND_ORIGINS[0],
             FRONTEND_ORIGINS: FRONTEND_ORIGINS.join(","),
             STREAMING_STORE_BACKEND: "dynamodb",
-            DDB_STREAMER_STATE_TABLE_NAME: STREAMER_STATE_TABLE_NAME,
-            DDB_VIEW_REPORTS_TABLE_NAME: VIEW_REPORTS_TABLE_NAME,
+            DDB_STREAMER_STATE_TABLE_NAME: streamerStateTable.tableName,
+            DDB_VIEW_REPORTS_TABLE_NAME: viewReportsTable.tableName,
             TWITCH_SWEEPER_INTERVAL_SECONDS:
               (this.node.tryGetContext(
                 "twitchSweeperIntervalSeconds"
