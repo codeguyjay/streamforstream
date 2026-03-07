@@ -22,7 +22,6 @@ export function ViewPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [localTotalPoints, setLocalTotalPoints] = useState<number | null>(null);
   const [localTotalPointsChannelLogin, setLocalTotalPointsChannelLogin] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const lastReportedMinuteRef = useRef<string | null>(null);
   const embedRef = useRef<TwitchEmbedHandle>(null);
 
@@ -32,22 +31,8 @@ export function ViewPage() {
     }
   }, [hydrated, router, session]);
 
-  useEffect(() => {
-    if (!session) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setRefreshNonce((value) => value + 1);
-    }, 30_000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [session]);
-
   const liveStreamsQuery = useInfiniteQuery({
-    queryKey: ["view-live-streams", session?.channel_login, refreshNonce],
+    queryKey: ["view-live-streams", session?.channel_login],
     queryFn: ({ pageParam }) =>
       StreamsService.getLive({
         exclude_channel_login: session?.channel_login,
@@ -59,7 +44,8 @@ export function ViewPage() {
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     enabled: Boolean(session),
   });
-  const { data, error, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isLoading } = liveStreamsQuery;
+  const { data, error, fetchNextPage, hasNextPage, isError, isFetching, isFetchingNextPage, isLoading, refetch } =
+    liveStreamsQuery;
   const streams = data?.pages.flatMap((page) => page.items) ?? [];
   const effectiveSelectedChannelLogin =
     streams.some((item) => item.channel_login === selectedChannelLogin)
@@ -77,7 +63,7 @@ export function ViewPage() {
     },
     onSuccess: () => {
       setMessage("Your channel is now on the live board.");
-      setRefreshNonce((value) => value + 1);
+      void refetch();
     },
     onError: (mutationError) => {
       setMessage(getErrorMessage(mutationError, "Unable to put your channel on the live board."));
@@ -94,6 +80,13 @@ export function ViewPage() {
       return;
     }
     void fetchNextPage();
+  }
+
+  function handleRefreshSuggestions() {
+    if (isFetching) {
+      return;
+    }
+    void refetch();
   }
 
   useEffect(() => {
@@ -130,9 +123,6 @@ export function ViewPage() {
         lastReportedMinuteRef.current = viewedMinute;
         setLocalTotalPoints(result.viewer_total_points);
         setLocalTotalPointsChannelLogin(viewerChannelLogin);
-        if (result.credited) {
-          setRefreshNonce((value) => value + 1);
-        }
       } catch (reportError) {
         if (!cancelled) {
           setMessage(getErrorMessage(reportError, "Unable to report viewing time right now."));
@@ -230,7 +220,7 @@ export function ViewPage() {
         ) : (
           <div className="empty-card">
             <h3>No other streamers are live right now.</h3>
-            <p className="helper">Keep this page open and the list will refresh automatically every 30 seconds.</p>
+            <p className="helper">Use Refresh Suggestions to check again without interrupting your current stream.</p>
           </div>
         )}
       </section>
@@ -244,6 +234,14 @@ export function ViewPage() {
               engage with!
             </p>
           </div>
+          <button
+            className="button-secondary"
+            disabled={isFetching}
+            onClick={handleRefreshSuggestions}
+            type="button"
+          >
+            {isFetching && !isFetchingNextPage ? "Refreshing..." : "Refresh Suggestions"}
+          </button>
         </div>
 
         {isLoading && streams.length === 0 ? <p className="helper">Loading live streamers...</p> : null}
@@ -279,7 +277,7 @@ export function ViewPage() {
         {!isLoading && streams.length === 0 ? (
           <div className="empty-card">
             <h3>No other streamers are live right now.</h3>
-            <p className="helper">Keep this page open and the list will refresh automatically every 30 seconds.</p>
+            <p className="helper">Use Refresh Suggestions to check again without interrupting your current stream.</p>
           </div>
         ) : null}
       </section>
