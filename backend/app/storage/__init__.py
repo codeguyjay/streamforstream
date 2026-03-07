@@ -14,7 +14,7 @@ def create_storage_from_env() -> StreamingStore:
         from app.storage.dynamodb import create_dynamodb_storage
 
         return create_dynamodb_storage(
-            region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1",
+            region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-west-2",
             endpoint_url=os.environ.get("DDB_ENDPOINT_URL") or None,
             streamer_state_table_name=os.environ.get("DDB_STREAMER_STATE_TABLE_NAME", "").strip(),
             view_reports_table_name=os.environ.get("DDB_VIEW_REPORTS_TABLE_NAME", "").strip(),

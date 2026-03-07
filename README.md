@@ -7,7 +7,7 @@ Anonymous Twitch streamer discovery for creators who want to trade real viewing 
 - `frontend`: Next.js app for the landing page, anonymous session flow, instructions, and view board.
 - `backend`: FastAPI app with Twitch integration, live-stream storage, and point tracking.
 - `docs`: Product and implementation notes.
-- `infra`: Placeholder for future CDK infrastructure work.
+- `infra`: AWS CDK app for the Route53, Amplify, ECS/Fargate, and DynamoDB deployment.
 
 ## Prerequisites
 
@@ -40,6 +40,7 @@ TWITCH_CLIENT_ID=your-twitch-client-id
 TWITCH_CLIENT_SECRET=your-twitch-client-secret
 TWITCH_SWEEPER_INTERVAL_SECONDS=300
 FRONTEND_ORIGIN=http://localhost:3000
+FRONTEND_ORIGINS=
 STREAMING_STORE_BACKEND=in_memory
 ```
 
@@ -47,7 +48,7 @@ Optional DynamoDB mode:
 
 ```env
 STREAMING_STORE_BACKEND=dynamodb
-AWS_REGION=us-east-1
+AWS_REGION=us-west-2
 DDB_ENDPOINT_URL=
 DDB_STREAMER_STATE_TABLE_NAME=your-streamer-state-table
 DDB_VIEW_REPORTS_TABLE_NAME=your-view-reports-table
@@ -145,6 +146,16 @@ Invoke-WebRequest -Uri "http://localhost:8080/openapi.json" -OutFile "./frontend
 cd frontend
 npx openapi-typescript-codegen --input ./openapi.json --output ./src/api
 ```
+
+## AWS Deployment
+
+The AWS infrastructure now lives in `infra/` and mirrors the `gamenight` workspace pattern:
+
+- DynamoDB in `us-west-2` for persistent streamer state and view reports
+- ECS Fargate + ALB for the FastAPI backend at `https://api.streambaton.tv`
+- Amplify Hosting for the Next.js frontend at `https://streambaton.tv` and `https://www.streambaton.tv`
+
+See `infra/README.md` for the exact secret names, Route53 prerequisites, and CDK deploy order.
 
 ## Troubleshooting
 

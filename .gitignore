@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /frontend/node_modules
+/infra/node_modules
 /.pnp
 .pnp.js
 
@@ -12,6 +13,7 @@
 # next.js
 /.next/
 /frontend/.next/
+/infra/cdk.out/
 /out/
 
 # production
@@ -40,3 +42,9 @@ __pycache__/
 *.tsbuildinfo
 next-env.d.ts
 frontend/tsconfig.tsbuildinfo
+infra/bin/*.js
+infra/bin/*.d.ts
+infra/lib/*.js
+infra/lib/*.d.ts
+infra/test/*.js
+infra/test/*.d.ts
