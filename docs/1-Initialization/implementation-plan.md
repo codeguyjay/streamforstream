@@ -1,4 +1,4 @@
-# StreamForStream Initialization Implementation Plan
+# StreamBaton Initialization Implementation Plan
 
 ## Summary
 

@@ -15,7 +15,7 @@ Under streaming right now, I don't think you need to explain how live channels a
 
 I think the front might actually have more text than it needs. I'm thinking something like:
 
-Earn points by spending time in other creators channels. Use those points to receive viewership from other members in the community. No logins, or purchasing needed!
+Earn views by spending time in other creators channels. No logins, or purchasing needed!
 
 Steps:
 1. Add your twitch channel

@@ -1,6 +1,6 @@
 # Frontend
 
-Next.js application for the StreamForStream landing page and anonymous streamer workflow.
+Next.js application for the StreamBaton landing page and anonymous streamer workflow.
 
 ## Responsibilities
 
@@ -31,8 +31,8 @@ Before starting the frontend, make sure the backend is running from the repo roo
 
 ```powershell
 cd ..\backend
-docker build -t streamforstream-backend .
-docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
+docker build -t streambaton-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 ```
 
 ## Build / Lint

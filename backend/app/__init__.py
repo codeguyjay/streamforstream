@@ -1,1 +1,1 @@
-"""StreamForStream backend package."""
+"""StreamBaton backend package."""

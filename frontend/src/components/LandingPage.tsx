@@ -30,10 +30,9 @@ export function LandingPage() {
         <div className="hero-grid">
           <div className="landing-hero-copy">
             <p className="eyebrow">Organic Twitch Discovery</p>
-            <h1>Earn points by spending time in other creators&apos; channels.</h1>
+            <h1>Earn views by spending time in other channels.</h1>
             <p className="lede">
-              Use those points to receive viewership from other members in the community. No logins or purchasing
-              needed.
+            No logins or purchasing needed.
             </p>
             <p className="hero-steps-label">Steps</p>
             <ol className="list">

@@ -67,7 +67,7 @@ export function InstructionsPage() {
           <article className="instruction-card">
             <span className="instruction-index">3</span>
             <h3>Go live</h3>
-            <p className="helper">When Twitch says your channel is live, StreamForStream adds you to the ranked discovery board.</p>
+            <p className="helper">When Twitch says your channel is live, StreamBaton adds you to the ranked discovery board.</p>
           </article>
         </div>
 

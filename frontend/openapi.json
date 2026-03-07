@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "StreamForStream API",
-    "description": "Backend API for the initial StreamForStream anonymous Twitch viewer exchange flow.",
+    "title": "StreamBaton API",
+    "description": "Backend API for the StreamBaton anonymous Twitch viewer exchange flow.",
     "version": "0.1.0"
   },
   "paths": {

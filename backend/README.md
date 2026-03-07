@@ -1,6 +1,6 @@
 # Backend
 
-FastAPI backend for the initial StreamForStream flow.
+FastAPI backend for the initial StreamBaton flow.
 
 ## Responsibilities
 
@@ -40,8 +40,8 @@ Optional:
 ## Build And Run With Docker
 
 ```powershell
-docker build -t streamforstream-backend .
-docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
+docker build -t streambaton-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 ```
 
 The backend will be available at:
@@ -58,8 +58,8 @@ The frontend expects the backend schema at `http://localhost:8080/openapi.json`.
 ## Direct Docker Commands
 
 ```powershell
-docker build -t streamforstream-backend .
-docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
+docker build -t streambaton-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 ```
 
 ## Notes

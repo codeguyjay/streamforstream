@@ -1,4 +1,4 @@
-# StreamForStream
+# StreamBaton
 
 Anonymous Twitch streamer discovery for creators who want to trade real viewing time and chat engagement.
 
@@ -77,8 +77,8 @@ Note for PowerShell: use `npm.cmd` instead of `npm` if your machine blocks `npm.
 
 ```powershell
 cd c:\Users\toonm\workspace\streamforstream\backend
-docker build -t streamforstream-backend .
-docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
+docker build -t streambaton-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 ```
 
 Expected URLs:
@@ -110,7 +110,7 @@ Expected URL:
 
 ## What The Current Version Does
 
-- Stores the Twitch profile in a browser-session cookie called `streamforstream_session`
+- Stores the Twitch profile in a browser-session cookie called `streambaton_session`
 - Validates channels against the real Twitch API
 - Tracks live streamers in either backend memory or DynamoDB
 - Re-checks live streamers against Twitch on a background interval
@@ -123,8 +123,8 @@ Expected URL:
 
 ```powershell
 cd c:\Users\toonm\workspace\streamforstream\backend
-docker build -t streamforstream-backend .
-docker run --rm -p 8080:8080 --env-file .env.local streamforstream-backend
+docker build -t streambaton-backend .
+docker run --rm -p 8080:8080 --env-file .env.local streambaton-backend
 ```
 
 ### Frontend

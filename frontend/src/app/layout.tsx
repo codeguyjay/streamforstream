@@ -5,8 +5,8 @@ import { Providers } from "@/app/providers";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
-  title: "StreamForStream",
-  description: "Anonymous stream discovery and minute-based point tracking for Twitch streamers.",
+  title: "StreamBaton",
+  description: "Pass support forward with anonymous stream discovery and minute-based point tracking for Twitch streamers.",
 };
 
 export default function RootLayout({
@@ -21,10 +21,10 @@ export default function RootLayout({
           <div className="page-shell">
             <header className="site-header">
               <Link className="brand-lockup" href="/">
-                <span className="brand-mark">SFS</span>
+                <span className="brand-mark">SB</span>
                 <span>
-                  <strong>StreamForStream</strong>
-                  <span className="brand-subtitle">Build each other up. Never Stream Alone.</span>
+                  <strong>StreamBaton</strong>
+                  <span className="brand-subtitle">Pass the support forward. Never stream alone.</span>
                 </span>
               </Link>
             </header>

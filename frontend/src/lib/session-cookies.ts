@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 
 import type { StreamerSession } from "@/lib/session";
 
-const SESSION_KEY = "streamforstream_session";
+const SESSION_KEY = "streambaton_session";
 
 export function getSessionFromCookies(): StreamerSession | null {
   const raw = Cookies.get(SESSION_KEY);

@@ -19,8 +19,8 @@ logging.basicConfig(level=getattr(logging, log_level, logging.INFO))
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="StreamForStream API",
-    description="Backend API for the initial StreamForStream anonymous Twitch viewer exchange flow.",
+    title="StreamBaton API",
+    description="Backend API for the StreamBaton anonymous Twitch viewer exchange flow.",
     version="0.1.0",
 )
 
@@ -88,7 +88,7 @@ app.include_router(routes_views.router, prefix="/api")
 
 @app.get("/")
 def read_root() -> dict[str, str]:
-    return {"message": "Welcome to StreamForStream API", "docs": "/docs", "version": "0.1.0"}
+    return {"message": "Welcome to StreamBaton API", "docs": "/docs", "version": "0.1.0"}
 
 
 @app.get("/health")

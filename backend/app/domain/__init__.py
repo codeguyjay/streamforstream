@@ -1,1 +1,1 @@
-"""Domain models for StreamForStream."""
+"""Domain models for StreamBaton."""

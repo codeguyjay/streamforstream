@@ -1,1 +1,1 @@
-"""API routes for StreamForStream."""
+"""API routes for StreamBaton."""
