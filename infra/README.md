@@ -2,9 +2,9 @@
 
 This CDK app follows the same overall AWS shape as `workspace/gamenight`, adapted for StreamBaton:
 
-- `DdbStorageStack`: DynamoDB tables for persistent streamer state and deduplicated viewing minute reports
-- `BackendStack`: ECS Fargate service behind an HTTPS Application Load Balancer at `api.streambaton.tv`
-- `FrontendStack`: Amplify Hosting for the Next.js app at `streambaton.tv` and `www.streambaton.tv`
+- `StreamBatonDdbStorageStack`: DynamoDB tables for persistent streamer state and deduplicated viewing minute reports
+- `StreamBatonBackendStack`: ECS Fargate service behind an HTTPS Application Load Balancer at `api.streambaton.tv`
+- `StreamBatonFrontendStack`: Amplify Hosting for the Next.js app at `streambaton.tv` and `www.streambaton.tv`
 
 The current app does not use Cognito, so there is no auth stack yet.
 
@@ -62,18 +62,18 @@ Deploy in this order:
 
 ```powershell
 cd infra
-npx cdk deploy DdbStorageStack
-npx cdk deploy BackendStack
-npx cdk deploy FrontendStack
+npx cdk deploy StreamBatonDdbStorageStack
+npx cdk deploy StreamBatonBackendStack
+npx cdk deploy StreamBatonFrontendStack
 ```
 
 ## Stack Behavior
 
-- `BackendStack` builds the Docker image from `backend/`
+- `StreamBatonBackendStack` builds the Docker image from `backend/`
 - the ECS task reads Twitch credentials from `twitch/api`
 - the backend is configured for DynamoDB mode automatically
 - the backend allows both `https://streambaton.tv` and `https://www.streambaton.tv` for CORS
-- `FrontendStack` points Amplify at the `frontend/` app in the `codeguyjay/streamforstream` repo, branch `main`
+- `StreamBatonFrontendStack` points Amplify at the `frontend/` app in the `codeguyjay/streamforstream` repo, branch `main`
 - Amplify receives `NEXT_PUBLIC_API_BASE_URL` from the backend stack output automatically
 
 ## Useful Commands

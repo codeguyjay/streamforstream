@@ -11,16 +11,16 @@ const env = { account, region: PRIMARY_REGION };
 
 cdk.Tags.of(app).add("Project", "StreamBaton");
 
-const ddbStack = new DdbStorageStack(app, "DdbStorageStack", {
+const ddbStack = new DdbStorageStack(app, "StreamBatonDdbStorageStack", {
   env,
 });
 
-const backendStack = new BackendStack(app, "BackendStack", {
+const backendStack = new BackendStack(app, "StreamBatonBackendStack", {
   env,
   ddbStack,
 });
 
-const frontendStack = new FrontendStack(app, "FrontendStack", {
+const frontendStack = new FrontendStack(app, "StreamBatonFrontendStack", {
   env,
 });
 frontendStack.addDependency(backendStack);
