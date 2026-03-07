@@ -73,10 +73,13 @@ input {
   height: 54px;
   border-radius: 18px;
   background: linear-gradient(135deg, var(--brand) 0%, #ec9b64 100%);
-  color: white;
-  font-weight: 700;
-  letter-spacing: 0.08em;
   box-shadow: var(--shadow);
+}
+
+.brand-mark-icon {
+  display: block;
+  width: 34px;
+  height: auto;
 }
 
 .brand-subtitle {

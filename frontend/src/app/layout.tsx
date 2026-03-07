@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Providers } from "@/app/providers";
@@ -21,7 +22,16 @@ export default function RootLayout({
           <div className="page-shell">
             <header className="site-header">
               <Link className="brand-lockup" href="/">
-                <span className="brand-mark">SB</span>
+                <span className="brand-mark">
+                  <Image
+                    className="brand-mark-icon"
+                    src="/streambaton-icon.png"
+                    alt=""
+                    width={414}
+                    height={288}
+                    priority
+                  />
+                </span>
                 <span>
                   <strong>StreamBaton</strong>
                   <span className="brand-subtitle">Pass the support forward. Never stream alone.</span>
