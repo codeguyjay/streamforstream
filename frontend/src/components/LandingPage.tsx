@@ -56,7 +56,7 @@ export function LandingPage() {
               <p className="error-text">{getErrorMessage(liveStreamsQuery.error, "Unable to load live streams.")}</p>
             ) : null}
             {selectedStream ? (
-              <TwitchEmbed autoplay channelLogin={selectedStream.channel_login} muted showChat={false} />
+              <TwitchEmbed channelLogin={selectedStream.channel_login} muted showChat={false} />
             ) : null}
             {!liveStreamsQuery.isLoading && !liveStreamsQuery.isError && !selectedStream ? (
               <div className="empty-card">

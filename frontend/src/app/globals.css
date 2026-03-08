@@ -336,7 +336,11 @@ input {
   border: 0;
   border-radius: 24px;
   background: #171717;
-  overflow: hidden;
+}
+
+.twitch-frame iframe {
+  border: 0;
+  border-radius: 24px;
 }
 
 .input-row {

@@ -40,6 +40,7 @@ interface TwitchEmbedConstructor {
     },
   ): TwitchEmbedInstance;
   VIDEO_READY: string;
+  VIDEO_PLAY: string;
 }
 
 declare global {
@@ -79,7 +80,7 @@ function loadTwitchScript(): Promise<void> {
 
 export function TwitchEmbed({
   channelLogin,
-  autoplay = true,
+  autoplay = false,
   muted = true,
   showChat = true,
   ref,
@@ -87,9 +88,13 @@ export function TwitchEmbed({
   const parent = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<TwitchPlayer | null>(null);
+  const playbackStartedRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
-    isPaused: () => playerRef.current?.isPaused() ?? true,
+    isPaused: () => {
+      if (!playbackStartedRef.current) return true;
+      return playerRef.current?.isPaused() ?? true;
+    },
   }));
 
   useEffect(() => {
@@ -98,6 +103,7 @@ export function TwitchEmbed({
 
     let cancelled = false;
     playerRef.current = null;
+    playbackStartedRef.current = false;
 
     void loadTwitchScript().then(() => {
       if (cancelled || !container || !window.Twitch?.Embed) return;
@@ -115,18 +121,20 @@ export function TwitchEmbed({
       });
 
       embed.addEventListener(window.Twitch.Embed.VIDEO_READY, () => {
-        const player = embed.getPlayer();
-        playerRef.current = player;
-        player.setMuted(muted);
-        if (autoplay) {
-          player.play();
-        }
+        if (cancelled) return;
+        playerRef.current = embed.getPlayer();
+      });
+
+      embed.addEventListener(window.Twitch.Embed.VIDEO_PLAY, () => {
+        if (cancelled) return;
+        playbackStartedRef.current = true;
       });
     });
 
     return () => {
       cancelled = true;
       playerRef.current = null;
+      playbackStartedRef.current = false;
       container.innerHTML = "";
     };
   }, [autoplay, channelLogin, muted, parent, showChat]);
